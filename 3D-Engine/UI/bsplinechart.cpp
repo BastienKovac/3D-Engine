@@ -14,6 +14,11 @@ BSplineChartView::BSplineChartView(QWidget *parent) : QChartView(parent)
     _splineSeries = new QLineSeries();
     _chart->addSeries(_splineSeries);
 
+    _controlPolygonSeries = new QLineSeries();
+    _controlPolygonSeries->setBrush(QBrush("blue"));
+    _controlPolygonSeries->setPen(QPen(Qt::PenStyle::DashLine));
+    _chart->addSeries(_controlPolygonSeries);
+
     setRenderHint(QPainter::Antialiasing);
     setRubberBand(QChartView::RectangleRubberBand);
     setChart(_chart);
@@ -27,20 +32,22 @@ BSplineChartView::BSplineChartView(QWidget *parent) : QChartView(parent)
 void BSplineChartView::displayControlPoints()
 {
     _controlPointsSeries->clear();
+    _controlPolygonSeries->clear();
     for (QPointF control : _spline->controlPoints())
     {
         _controlPointsSeries->append(control);
+        _controlPolygonSeries->append(control);
     }
 }
 
 void BSplineChartView::refreshBSpline()
 {
-    // 1- Display control points
+    // 1- Display control points and polygon
     displayControlPoints();
 
     // 2- Display computed B-Spline
     _splineSeries->clear();
-    std::vector<QPointF> bspline = _spline->computeBSpline();
+    std::vector<QPointF> bspline = _spline->computedPoints();
     for (QPointF value : bspline)
     {
         _splineSeries->append(value);
@@ -171,8 +178,8 @@ std::optional<QPointF> BSplineChartView::getStoredPointFromPosition(QMouseEvent 
 
     for (QPointF storedPoint : _spline->controlPoints())
     {
-        if (storedPoint.x() > eventValue.x() + tolerance || storedPoint.x() < eventValue.x() - tolerance ||
-            storedPoint.y() > eventValue.y() + tolerance || storedPoint.y() < eventValue.y() - tolerance)
+        if (storedPoint.x() > eventValue.x() + eventValue.x() * tolerance || storedPoint.x() < eventValue.x() - eventValue.x() * tolerance ||
+            storedPoint.y() > eventValue.y() + eventValue.y() * tolerance || storedPoint.y() < eventValue.y() - eventValue.y() * tolerance)
         {
             continue;
         }

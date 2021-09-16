@@ -39,13 +39,14 @@ private:
 
     QScatterSeries * _controlPointsSeries;
     QLineSeries * _splineSeries;
+    QLineSeries * _controlPolygonSeries;
 
     void displayControlPoints();
 
     // Handling of point drag
     bool _drag = false;
     QPointF _draggedPoint;
-    std::optional<QPointF> getStoredPointFromPosition(QMouseEvent *event, float tolerance=0.5);
+    std::optional<QPointF> getStoredPointFromPosition(QMouseEvent *event, float tolerance=0.1);
 
     QPointF getEventValue(QMouseEvent *event);
 };

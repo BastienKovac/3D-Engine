@@ -5,14 +5,54 @@ BSpline::BSpline(int degree)
     setDegree(degree);
 }
 
+void BSpline::setDegree(int degree)
+{
+    _degree = degree;
+
+    _computedPoints = computeBSpline();
+}
+
+void BSpline::setControlPoints(std::vector<QPointF> controlPoints)
+{
+    _controlPoints.clear();
+    _controlPoints.insert(_controlPoints.begin(), controlPoints.begin(), controlPoints.end());
+
+    _computedPoints = computeBSpline();
+}
+
+void BSpline::addControlPoint(QPointF controlPoint)
+{
+    _controlPoints.push_back(controlPoint);
+
+    _computedPoints = computeBSpline();
+}
+
+void BSpline::removeControlPoint(QPointF controlPoint)
+{
+    _controlPoints.erase(std::remove(_controlPoints.begin(), _controlPoints.end(), controlPoint), _controlPoints.end());
+
+    _computedPoints = computeBSpline();
+}
+
+void BSpline::replaceControlPoint(QPointF oldV, QPointF newV)
+{
+    std::replace(_controlPoints.begin(), _controlPoints.end(), oldV, newV);
+
+    _computedPoints = computeBSpline();
+}
+
 void BSpline::setStartFromFirstPoint(bool newStartFromFirstPoint)
 {
     _startFromFirstPoint = newStartFromFirstPoint;
+
+    _computedPoints = computeBSpline();
 }
 
 void BSpline::setFinishAtLastPoint(bool newFinishAtLastPoint)
 {
     _finishAtLastPoint = newFinishAtLastPoint;
+
+    _computedPoints = computeBSpline();
 }
 
 const std::vector<QPointF> &BSpline::controlPoints() const
@@ -65,6 +105,11 @@ std::vector<QPointF> BSpline::computeBSpline(float step)
     }
 
     return spline;
+}
+
+const std::vector<QPointF> &BSpline::computedPoints() const
+{
+    return _computedPoints;
 }
 
 QPointF BSpline::computeSplineFor(float u)
