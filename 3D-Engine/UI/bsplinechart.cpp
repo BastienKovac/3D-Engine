@@ -12,14 +12,15 @@ BSplineChartView::BSplineChartView(QWidget *parent) : QChartView(parent)
     _chart->addSeries(_controlPointsSeries);
 
     _splineSeries = new QLineSeries();
+    _splineSeries->setUseOpenGL(true);
     _chart->addSeries(_splineSeries);
 
     _controlPolygonSeries = new QLineSeries();
     _controlPolygonSeries->setBrush(QBrush("blue"));
     _controlPolygonSeries->setPen(QPen(Qt::PenStyle::DashLine));
+    _controlPolygonSeries->setUseOpenGL(true);
     _chart->addSeries(_controlPolygonSeries);
 
-    setRenderHint(QPainter::Antialiasing);
     setRubberBand(QChartView::RectangleRubberBand);
     setChart(_chart);
 
