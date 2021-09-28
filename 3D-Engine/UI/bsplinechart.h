@@ -12,7 +12,7 @@
 
 #include <Spline/bspline.h>
 
-class BSplineChartView : public QChartView
+class BSplineChartView : public QtCharts::QChartView
 {
 
     Q_OBJECT
@@ -35,11 +35,11 @@ private:
 
     std::unique_ptr<BSpline> _spline;
 
-    QChart * _chart;
+    QtCharts::QChart * _chart;
 
-    QScatterSeries * _controlPointsSeries;
-    QLineSeries * _splineSeries;
-    QLineSeries * _controlPolygonSeries;
+    QtCharts::QScatterSeries * _controlPointsSeries;
+    QtCharts::QLineSeries * _splineSeries;
+    QtCharts::QLineSeries * _controlPolygonSeries;
 
     void displayControlPoints();
 

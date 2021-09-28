@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <QColor>
+#include <vector>
 
 const double DOUBLE_PI = 3.1415926535897932384626433832795;
 

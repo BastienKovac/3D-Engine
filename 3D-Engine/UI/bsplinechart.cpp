@@ -3,19 +3,19 @@
 
 BSplineChartView::BSplineChartView(QWidget *parent) : QChartView(parent)
 {
-    _chart = new QChart();
+    _chart = new QtCharts::QChart();
     _chart->legend()->hide();
     _chart->setTitle("B-Spline");
 
-    _controlPointsSeries = new QScatterSeries();
-    _controlPointsSeries->setMarkerShape(QScatterSeries::MarkerShape::MarkerShapeRectangle);
+    _controlPointsSeries = new QtCharts::QScatterSeries();
+    _controlPointsSeries->setMarkerShape(QtCharts::QScatterSeries::MarkerShape::MarkerShapeRectangle);
     _chart->addSeries(_controlPointsSeries);
 
-    _splineSeries = new QLineSeries();
+    _splineSeries = new QtCharts::QLineSeries();
     _splineSeries->setUseOpenGL(true);
     _chart->addSeries(_splineSeries);
 
-    _controlPolygonSeries = new QLineSeries();
+    _controlPolygonSeries = new QtCharts::QLineSeries();
     _controlPolygonSeries->setBrush(QBrush("blue"));
     _controlPolygonSeries->setPen(QPen(Qt::PenStyle::DashLine));
     _controlPolygonSeries->setUseOpenGL(true);
@@ -168,7 +168,7 @@ BSpline*BSplineChartView::spline() const
 
 QPointF BSplineChartView::getEventValue(QMouseEvent *event)
 {
-    QPointF eventPosition = event->position();
+    QPointF eventPosition = event->pos();
     QPointF chartPosition = _chart->mapFromScene(eventPosition);
     return _chart->mapToValue(chartPosition);
 }
