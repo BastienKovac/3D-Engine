@@ -29,7 +29,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
 
-private slots:
+public slots:
     void refreshBSpline();
 
 private:

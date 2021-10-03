@@ -26,9 +26,7 @@ BSplineChartView::BSplineChartView(QWidget *parent) : QChartView(parent)
 
     // Init model bspline
     _spline = std::unique_ptr<BSpline>(new BSpline());
-
-    connect(this, SIGNAL(BSpline::splineChanged()), this, SLOT(refreshBSpline()));
-    refreshBSpline();
+    connect(_spline.get(), SIGNAL(splineChanged()), this, SLOT(refreshBSpline()));
 }
 
 void BSplineChartView::displayControlPoints()
@@ -90,8 +88,6 @@ void BSplineChartView::mousePressEvent(QMouseEvent *event)
             _spline->addControlPoint(getEventValue(event));
         }
     }
-
-    refreshBSpline();
 }
 
 void BSplineChartView::mouseReleaseEvent(QMouseEvent *event)
@@ -128,10 +124,7 @@ void BSplineChartView::mouseMoveEvent(QMouseEvent *event)
 
         _draggedPoint = eventValue;
         _spline->replaceControlPoint(tmp, _draggedPoint);
-
-        refreshBSpline();
     }
-
 }
 
 void BSplineChartView::keyPressEvent(QKeyEvent *event)

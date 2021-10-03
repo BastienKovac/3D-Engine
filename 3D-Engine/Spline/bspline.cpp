@@ -130,8 +130,7 @@ const std::vector<QPointF> &BSpline::computedPoints() const
 void BSpline::setCloseSpline(bool newCloseSpline)
 {
     _closeSpline = newCloseSpline;
-
-    _computedPoints = computeBSpline();
+    refreshSpline();
 }
 
 QPointF BSpline::computeSplineFor(std::vector<QPointF> controls, std::vector<int> nodal, float u)
