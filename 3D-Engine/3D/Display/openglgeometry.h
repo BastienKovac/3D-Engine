@@ -25,6 +25,8 @@ public:
     void keyboardmove(int key, double time) override;
     bool keyboard(unsigned char k) override;
 
+    void setGeometry(std::vector<GLfloat> vertices, std::vector<GLuint> indices);
+
 private:
     // A simple geometry
     std::vector<GLfloat> _vertices;
@@ -57,6 +59,11 @@ private:
     glm::mat4 _view;
     glm::mat4 _projection;
 
+    // Compute normals
+    void computeNormalsFor(std::vector<GLfloat> vertices, std::vector<GLuint> indices);
+    glm::vec3 computeNormalFor(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
+
+    void clearOpenGLContext();
 };
 
 #endif // OPENGLGEOMETRY_H

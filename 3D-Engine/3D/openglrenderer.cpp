@@ -89,6 +89,9 @@ void OpenGLRenderer::keyPressEvent(QKeyEvent *keyEvent)
 }
 
 void OpenGLRenderer::mousePressEvent(QMouseEvent *mouseEvent) {
+    // Force focus to OpenGL renderer
+    setFocus();
+
     // buttons are 0(left), 1(right) to 2(middle)
     int b;
     Qt::MouseButton button=mouseEvent->button();

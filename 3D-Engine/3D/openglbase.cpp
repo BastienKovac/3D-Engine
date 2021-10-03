@@ -18,7 +18,7 @@ void OpenGLBase::resize(int width, int height) {
 }
 
 void OpenGLBase::draw() {
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (_drawFill)
