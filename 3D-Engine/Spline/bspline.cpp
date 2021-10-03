@@ -60,10 +60,10 @@ const std::vector<QPointF> &BSpline::controlPoints() const
     return _controlPoints;
 }
 
-std::vector<int> BSpline::getNodalVector()
+std::vector<int> BSpline::getNodalVector(std::vector<QPointF> controls)
 {
     int k = _degree + 1;
-    int nbPoints = _controlPoints.size();
+    int nbPoints = controls.size();
 
     std::vector<int> nodal = arange<int>(1, k + nbPoints);
 
@@ -83,25 +83,36 @@ std::vector<int> BSpline::getNodalVector()
         }
     }
 
+
     return nodal;
 }
 
 std::vector<QPointF> BSpline::computeBSpline(float step)
 {
-
     if ((unsigned int) _degree >= _controlPoints.size())
     {
         return {};
     }
 
-    std::vector<int> nodal = getNodalVector();
-    std::vector<float> uValues = arange<float>(nodal[_degree], nodal[_controlPoints.size()], step);
+    std::vector<QPointF> controls;
+    controls.insert(controls.end(), _controlPoints.begin(), _controlPoints.end());
+
+    if (_closeSpline)
+    {
+        for (int i = 0 ; i < _degree + 1 ; ++i)
+        {
+            controls.push_back(_controlPoints[i]);
+        }
+    }
+
+    std::vector<int> nodal = getNodalVector(controls);
+    std::vector<float> uValues = arange<float>(nodal[_degree], nodal[controls.size()], step);
 
     std::vector<QPointF> spline(uValues.size());
 
     for (unsigned int i = 0 ; i < uValues.size() ; ++i)
     {
-        spline[i] = computeSplineFor(uValues[i]);
+        spline[i] = computeSplineFor(controls, nodal, uValues[i]);
     }
 
     return spline;
@@ -112,10 +123,21 @@ const std::vector<QPointF> &BSpline::computedPoints() const
     return _computedPoints;
 }
 
-QPointF BSpline::computeSplineFor(float u)
+bool BSpline::closeSpline() const
+{
+    return _closeSpline;
+}
+
+void BSpline::setCloseSpline(bool newCloseSpline)
+{
+    _closeSpline = newCloseSpline;
+
+    _computedPoints = computeBSpline();
+}
+
+QPointF BSpline::computeSplineFor(std::vector<QPointF> controls, std::vector<int> nodal, float u)
 {
     int k = _degree + 1;
-    std::vector<int> nodal = getNodalVector();
 
     // Step 1 : Compute relevant control points
 
@@ -129,7 +151,7 @@ QPointF BSpline::computeSplineFor(float u)
 
     for (int i = 0 ; i < k ; ++i)
     {
-        Ptf[i] = _controlPoints[i + offset];
+        Ptf[i] = controls[i + offset];
     }
 
     // Step 2 : Compute spline value for u

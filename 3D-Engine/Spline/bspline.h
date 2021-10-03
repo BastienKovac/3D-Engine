@@ -29,6 +29,9 @@ public:
 
     const std::vector<QPointF> &computedPoints() const;
 
+    bool closeSpline() const;
+    void setCloseSpline(bool newCloseSpline);
+
 private:
 
     int _degree;
@@ -37,9 +40,10 @@ private:
 
     bool _startFromFirstPoint = false;
     bool _finishAtLastPoint = false;
+    bool _closeSpline = false;
 
-    std::vector<int> getNodalVector();
-    QPointF computeSplineFor(float u);
+    std::vector<int> getNodalVector(std::vector<QPointF> controls);
+    QPointF computeSplineFor(std::vector<QPointF> controls, std::vector<int> nodal, float u);
     std::vector<QPointF> computeBSpline(float step = 0.01);
 
 };

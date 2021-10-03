@@ -144,10 +144,10 @@ void BSplineChartView::keyPressEvent(QKeyEvent *event)
         _chart->zoomOut();
         break;
     case Qt::Key_Left:
-        _chart->scroll(-5, 0);
+        _chart->scroll(5, 0);
         break;
     case Qt::Key_Right:
-        _chart->scroll(5, 0);
+        _chart->scroll(-5, 0);
         break;
     case Qt::Key_Up:
         _chart->scroll(0, 5);

@@ -1,10 +1,9 @@
 #include "openglrenderer.h"
-#include <GL/glu.h>
 
 #include <iostream>
+#include <3D/openglbase.h>
 
-OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps)
-    : QOpenGLWidget(parent)
+OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps) : QOpenGLWidget(parent)
 {
     if (fps == 0)
     {
@@ -17,98 +16,125 @@ OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps)
         connect(t_Timer, SIGNAL(timeout()), this, SLOT(updateGL()));
         t_Timer->start(timerInterval);
     }
+
+    _demoConstructors.push_back( [](int width, int height)->OpenGLBase*{
+        return new OpenGLGeometry(width, height);
+    });
+}
+
+void OpenGLRenderer::cleanup() {
+    _scene.reset(nullptr);
 }
 
 void OpenGLRenderer::initializeGL()
 {
-    glShadeModel(GL_SMOOTH);
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &OpenGLRenderer::cleanup);
 
-    float r, g, b, a = 1.0f;
-    qColorToRGB(Qt::darkGray, r, g, b);
-    glClearColor(r, g, b, a);
-    glClearDepth(1.0f);
+    if (!initializeOpenGLFunctions())
+    {
+        QMessageBox::critical(this, "OpenGL initialization error", "MyOpenGLWidget::initializeGL() : Unable to initialize OpenGL functions");
+        exit(1);
+    }
 
-    glEnable(GL_DEPTH_TEST);
+    _scene.reset(_demoConstructors[0](width(), height()));
 }
 
 void OpenGLRenderer::paintGL()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    // Model view matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(0.0, 0.0, -distance,
-              0.0, 0.0, 0.0,
-              0.0, 1.0, 0.0);
-
-    glRotatef(xRot / 16.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(yRot / 16.0f, 0.0f, 1.0f, 0.0f);
-    glRotatef(zRot / 16.0f, 0.0f, 0.0f, 1.0f);
-
-    // Projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    perspectiveGL(60.0f, 1.0 * width() / height(), 0.1f, 100.0f);
-
-    glBegin(GL_TRIANGLES);
-    glVertex3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(-1.0f, -1.0f, 0.0f);
-    glVertex3f(1.0f, -1.0f, 0.0f);
-    glEnd();
-
-    glTranslatef(3.0f, 0.0f, -6.0f);
-
-    glBegin(GL_QUADS);
-    glVertex3f(-1.0f, 1.0f, 0.0f);
-    glVertex3f(-1.0f, -1.0f, 0.0f);
-    glVertex3f(1.0f, -1.0f, 0.0f);
-    glVertex3d(1.0f, 1.0f, 0.0f);
-    glEnd();
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    _scene->draw();
+    glFinish();
 }
 
 void OpenGLRenderer::resizeGL(int width, int height)
 {
-    glViewport(0, 0, width, height);
+    _scene->resize(width, height);
 }
 
 void OpenGLRenderer::keyPressEvent(QKeyEvent *keyEvent)
 {
     switch (keyEvent->key())
     {
-    case Qt::Key_Escape:
-        close();
+    case Qt::Key_0:
+    case Qt::Key_1:
+    case Qt::Key_2:
+    case Qt::Key_3:
+    case Qt::Key_4:
+    case Qt::Key_5:
+    case Qt::Key_6:
+    case Qt::Key_7:
+    case Qt::Key_8:
+    case Qt::Key_9:
+        // Demo keys
+        activateDemo(keyEvent->key() - Qt::Key_0);
         break;
+    case Qt::Key_Left:
+    case Qt::Key_Up:
+    case Qt::Key_Right:
+    case Qt::Key_Down:
+        // Move keys
+        _scene->keyboardmove(keyEvent->key() - Qt::Key_Left, 1. / 100);
+        update();
+        break;
+    case Qt::Key_W:
+        _scene->toggleDrawmode();
+        update();
+        break;
+    default :
+        // Other keys are transmitted to the scene
+        if (_scene->keyboard(keyEvent->text().toStdString()[0]))
+        {
+            update();
+        }
     }
 }
 
-void OpenGLRenderer::wheelEvent(QWheelEvent *wheelEvent)
-{
-    distance *= 1.0 + (1.0 * wheelEvent->delta() / 1200.0);
-}
-
-void OpenGLRenderer::mousePressEvent(QMouseEvent *mouseEvent)
-{
-    lastPosition = mouseEvent->pos();
-}
-
-void OpenGLRenderer::mouseMoveEvent(QMouseEvent *mouseEvent)
-{
-    int dx = mouseEvent->x() - lastPosition.x();
-    int dy = mouseEvent->y() - lastPosition.y();
-
-    if (mouseEvent->buttons() & Qt::RightButton)
+void OpenGLRenderer::mousePressEvent(QMouseEvent *mouseEvent) {
+    // buttons are 0(left), 1(right) to 2(middle)
+    int b;
+    Qt::MouseButton button=mouseEvent->button();
+    if (button & Qt::LeftButton)
     {
-        rotateBy(dy * 8, 0, 0);
-        rotateBy(0, dx * 8, 0);
+        if ((mouseEvent->modifiers() & Qt::ControlModifier))
+        {
+            b = 2;
+        }
+        else
+        {
+            b = 0;
+        }
     }
-    lastPosition = mouseEvent->pos();
+    else if (button & Qt::RightButton)
+    {
+        b = 1;
+    }
+    else if (button & Qt::MiddleButton)
+    {
+        b = 2;
+    }
+    else
+    {
+        b = 3;
+    }
+    _scene->mouseclick(b, mouseEvent->x(), mouseEvent->y());
 }
+
+void OpenGLRenderer::mouseMoveEvent(QMouseEvent *mouseEvent) {
+    _scene->mousemove(mouseEvent->x(), mouseEvent->y());
+    update();
+}
+
+void OpenGLRenderer::activateDemo(unsigned int numDemo) {
+    if (numDemo < _demoConstructors.size()) {
+        std::cout << "Activating demo " << numDemo << " : " << std::endl;
+        makeCurrent();
+        _scene.reset(_demoConstructors[numDemo](width(), height()));
+        doneCurrent();
+        update();
+    }
+}
+
 
 void OpenGLRenderer::updateGL()
 {
-    paintGL();
+    update();
 }
