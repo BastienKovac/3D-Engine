@@ -1,15 +1,20 @@
 #ifndef BSPLINE_H
 #define BSPLINE_H
 
+#include <QObject>
+
 #include <vector>
 #include <QPoint>
 #include <algorithm>
 #include <utils.h>
 
-class BSpline
+class BSpline : public QObject
 {
+    Q_OBJECT
+
 public:
-    BSpline(int degree = 3);
+    BSpline(QObject *parent = nullptr, int degree = 3);
+    ~BSpline();
 
     void setDegree(int degree);
 
@@ -29,8 +34,10 @@ public:
 
     const std::vector<QPointF> &computedPoints() const;
 
-    bool closeSpline() const;
     void setCloseSpline(bool newCloseSpline);
+
+signals:
+    void splineChanged();
 
 private:
 
@@ -46,6 +53,7 @@ private:
     QPointF computeSplineFor(std::vector<QPointF> controls, std::vector<int> nodal, float u);
     std::vector<QPointF> computeBSpline(float step = 0.01);
 
+    void refreshSpline();
 };
 
 #endif // BSPLINE_H

@@ -26,30 +26,20 @@ MainWindow::~MainWindow()
 void MainWindow::on_degreeSlider_valueChanged(int value)
 {
     ui->splinePlotter->spline()->setDegree(value);
-    refreshSplinePlot();
 }
 
 void MainWindow::on_getFirstPointBox_toggled(bool checked)
 {
     ui->splinePlotter->spline()->setStartFromFirstPoint(checked);
-    refreshSplinePlot();
 }
-
 
 void MainWindow::on_finishAtLastPointBox_toggled(bool checked)
 {
     ui->splinePlotter->spline()->setFinishAtLastPoint(checked);
-    refreshSplinePlot();
-}
-
-void MainWindow::refreshSplinePlot()
-{
-    ui->splinePlotter->refreshBSpline();
 }
 
 void MainWindow::on_closseSplineBox_toggled(bool checked)
 {
     ui->splinePlotter->spline()->setCloseSpline(checked);
-    refreshSplinePlot();
 }
 

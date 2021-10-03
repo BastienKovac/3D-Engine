@@ -21,9 +21,7 @@ public:
     BSplineChartView(QWidget *parent = nullptr);
     virtual ~BSplineChartView(){};
 
-    void refreshBSpline();
-
-    BSpline*spline() const;
+    std::shared_ptr<BSpline> spline() const;
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -31,9 +29,12 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
 
+private slots:
+    void refreshBSpline();
+
 private:
 
-    std::unique_ptr<BSpline> _spline;
+    std::shared_ptr<BSpline> _spline;
 
     QtCharts::QChart * _chart;
 

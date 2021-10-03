@@ -1,58 +1,62 @@
 #include "bspline.h"
 
-BSpline::BSpline(int degree)
+BSpline::BSpline(QObject *parent, int degree) : QObject(parent)
 {
     setDegree(degree);
+}
+
+BSpline::~BSpline()
+{
+
 }
 
 void BSpline::setDegree(int degree)
 {
     _degree = degree;
-
-    _computedPoints = computeBSpline();
+    refreshSpline();
 }
 
 void BSpline::setControlPoints(std::vector<QPointF> controlPoints)
 {
     _controlPoints.clear();
     _controlPoints.insert(_controlPoints.begin(), controlPoints.begin(), controlPoints.end());
-
-    _computedPoints = computeBSpline();
+    refreshSpline();
 }
 
 void BSpline::addControlPoint(QPointF controlPoint)
 {
     _controlPoints.push_back(controlPoint);
-
-    _computedPoints = computeBSpline();
+    refreshSpline();
 }
 
 void BSpline::removeControlPoint(QPointF controlPoint)
 {
     _controlPoints.erase(std::remove(_controlPoints.begin(), _controlPoints.end(), controlPoint), _controlPoints.end());
-
-    _computedPoints = computeBSpline();
+    refreshSpline();
 }
 
 void BSpline::replaceControlPoint(QPointF oldV, QPointF newV)
 {
     std::replace(_controlPoints.begin(), _controlPoints.end(), oldV, newV);
-
-    _computedPoints = computeBSpline();
+refreshSpline();
 }
 
 void BSpline::setStartFromFirstPoint(bool newStartFromFirstPoint)
 {
     _startFromFirstPoint = newStartFromFirstPoint;
-
-    _computedPoints = computeBSpline();
+    refreshSpline();
 }
 
 void BSpline::setFinishAtLastPoint(bool newFinishAtLastPoint)
 {
     _finishAtLastPoint = newFinishAtLastPoint;
+    refreshSpline();
+}
 
+void BSpline::refreshSpline()
+{
     _computedPoints = computeBSpline();
+    emit splineChanged();
 }
 
 const std::vector<QPointF> &BSpline::controlPoints() const
@@ -121,11 +125,6 @@ std::vector<QPointF> BSpline::computeBSpline(float step)
 const std::vector<QPointF> &BSpline::computedPoints() const
 {
     return _computedPoints;
-}
-
-bool BSpline::closeSpline() const
-{
-    return _closeSpline;
 }
 
 void BSpline::setCloseSpline(bool newCloseSpline)

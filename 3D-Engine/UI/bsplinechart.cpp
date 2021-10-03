@@ -27,6 +27,7 @@ BSplineChartView::BSplineChartView(QWidget *parent) : QChartView(parent)
     // Init model bspline
     _spline = std::unique_ptr<BSpline>(new BSpline());
 
+    connect(this, SIGNAL(BSpline::splineChanged()), this, SLOT(refreshBSpline()));
     refreshBSpline();
 }
 
@@ -161,9 +162,9 @@ void BSplineChartView::keyPressEvent(QKeyEvent *event)
     }
 }
 
-BSpline*BSplineChartView::spline() const
+std::shared_ptr<BSpline> BSplineChartView::spline() const
 {
-    return _spline.get();
+    return _spline;
 }
 
 QPointF BSplineChartView::getEventValue(QMouseEvent *event)
