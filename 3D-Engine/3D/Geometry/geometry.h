@@ -10,6 +10,10 @@
 
 #include <GL/gl.h>
 
+#include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+typedef OpenMesh::TriMesh_ArrayKernelT<> Mesh;
+#include <OpenMesh/Core/Utils/PropertyManager.hh>
+
 class Geometry : QObject
 {
     Q_OBJECT
@@ -20,25 +24,26 @@ public:
 
     void setScene(std::vector<GLfloat> vertices, std::vector<GLuint> indices);
 
-    bool hasGeometry();
-
-    std::vector<GLfloat> vertices() const;
-    std::vector<GLfloat> normals() const;
-    std::vector<GLuint> indices() const;
+    std::vector<GLfloat> vertices();
+    std::vector<GLfloat> normals();
+    std::vector<GLuint> indices();
 
 signals:
     void geometryRefreshed();
 
 private:
-    // A simple geometry
+    // OpenMesh geometry
+    Mesh _mesh;
+    std::vector<Mesh::VertexHandle> _vertexHandles;
+
+    // Geometry cache
+    bool _dirty = true;
+
     std::vector<GLfloat> _vertices;
     std::vector<GLfloat> _normals;
     std::vector<GLuint> _indices;
 
-    // Compute normals
-    void computeNormalsFor(std::vector<GLfloat> vertices, std::vector<GLuint> indices);
-    glm::vec3 computeNormalFor(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3);
-
+    void refreshGeometryCache();
 };
 
 #endif // GEOMETRY_H
