@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-OpenGLBase::OpenGLBase(int width, int height) :  _width(width), _height(height), _drawFill(true) {
+OpenGLBase::OpenGLBase(int width, int height) : _width(width), _height(height), _drawFill(true) {
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, width, height);

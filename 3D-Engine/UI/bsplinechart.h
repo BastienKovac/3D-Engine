@@ -19,7 +19,7 @@ class BSplineChartView : public QtCharts::QChartView
 
 public:
     BSplineChartView(QWidget *parent = nullptr);
-    virtual ~BSplineChartView(){};
+    virtual ~BSplineChartView(){}
 
     std::shared_ptr<BSpline> spline() const;
 

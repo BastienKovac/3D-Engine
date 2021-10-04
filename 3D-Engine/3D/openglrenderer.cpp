@@ -18,7 +18,7 @@ OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps) : QOpenGLWidget(parent)
     }
 
     _demoConstructors.push_back( [](int width, int height)->OpenGLBase*{
-        return new OpenGLGeometry(width, height);
+        return new SimpleScene(width, height);
     });
 }
 

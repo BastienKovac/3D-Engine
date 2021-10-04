@@ -6,7 +6,6 @@
 #include <QOpenGLFunctions_4_1_Core>
 
 class OpenGLBase : public QOpenGLFunctions_4_1_Core
-
 {
 public:
     explicit OpenGLBase(int width, int height);

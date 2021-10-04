@@ -14,7 +14,7 @@
 
 #include <3D/Camera/camera.h>
 #include <3D/openglbase.h>
-#include <3D/Display/openglgeometry.h>
+#include <3D/Display/simplescene.h>
 
 class OpenGLRenderer : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 {

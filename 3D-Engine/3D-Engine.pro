@@ -22,18 +22,18 @@ CONFIG += c++17
 
 SOURCES += \
     3D/Camera/camera.cpp \
-    3D/Display/openglgeometry.cpp \
     3D/openglbase.cpp \
     Spline/bspline.cpp \
     UI/bsplinechart.cpp \
     glm/detail/glm.cpp \
     main.cpp \
     UI/mainwindow.cpp \
-    3D/openglrenderer.cpp
+    3D/openglrenderer.cpp \
+    3D/Geometry/geometry.cpp \
+    3D/Display/simplescene.cpp
 
 HEADERS += \
     3D/Camera/camera.h \
-    3D/Display/openglgeometry.h \
     3D/openglbase.h \
     Spline/bspline.h \
     UI/bsplinechart.h \
@@ -296,7 +296,9 @@ HEADERS += \
     glm/vec3.hpp \
     glm/vec4.hpp \
     glm/vector_relational.hpp \
-    utils.h
+    utils.h \
+    3D/Geometry/geometry.h \
+    3D/Display/simplescene.h
 
 FORMS += \
     UI/mainwindow.ui
