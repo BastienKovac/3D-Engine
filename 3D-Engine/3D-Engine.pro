@@ -307,3 +307,47 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+unix:!macx: LIBS += -L$$PWD/libs/OpenMesh/lib/ -lOpenMeshCore
+
+INCLUDEPATH += $$PWD/libs/OpenMesh/include
+DEPENDPATH += $$PWD/libs/OpenMesh/include
+
+unix:!macx: PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/libOpenMeshCore.a
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libs/OpenMesh/lib/release/ -lOpenMeshTools
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/OpenMesh/lib/debug/ -lOpenMeshTools
+else:unix: LIBS += -L$$PWD/libs/OpenMesh/lib/ -lOpenMeshTools
+
+INCLUDEPATH += $$PWD/libs/OpenMesh/include
+DEPENDPATH += $$PWD/libs/OpenMesh/include
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/release/libOpenMeshTools.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/debug/libOpenMeshTools.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/release/OpenMeshTools.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/debug/OpenMeshTools.lib
+else:unix: PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/libOpenMeshTools.a
+
+unix:!macx: LIBS += -L$$PWD/libs/OpenMesh/lib/ -lOpenMeshCore
+
+INCLUDEPATH += $$PWD/libs/OpenMesh/include
+DEPENDPATH += $$PWD/libs/OpenMesh/include
+
+unix:!macx: PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/libOpenMeshCore.a
+
+unix:!macx: LIBS += -L$$PWD/libs/OpenMesh/lib/ -lOpenMeshCore
+
+INCLUDEPATH += $$PWD/libs/OpenMesh/include
+DEPENDPATH += $$PWD/libs/OpenMesh/include
+
+unix:!macx: LIBS += -L$$PWD/libs/OpenMesh/lib/ -lOpenMeshTools
+
+INCLUDEPATH += $$PWD/libs/OpenMesh/include
+DEPENDPATH += $$PWD/libs/OpenMesh/include
+
+unix:!macx: PRE_TARGETDEPS += $$PWD/libs/OpenMesh/lib/libOpenMeshTools.a
+
+unix:!macx: LIBS += -L$$PWD/libs/OpenMesh/lib/ -lOpenMeshTools
+
+INCLUDEPATH += $$PWD/libs/OpenMesh/include
+DEPENDPATH += $$PWD/libs/OpenMesh/include
