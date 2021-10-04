@@ -1,7 +1,17 @@
 QT       += core gui opengl charts
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-LIBS += -L/usr/local/lib -lopengl32
+LIBS += -L/usr/local/lib
+
+# Include openGL lib
+win32 {
+    LIBS += -lopengl32
+}
+
+linux-g++* {
+    LIBS += -lGLU
+}
+
 
 QMAKE_CXXFLAGS += -std=c++17
 CONFIG += c++17
