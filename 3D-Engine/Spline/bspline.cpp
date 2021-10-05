@@ -157,8 +157,9 @@ QPointF BSpline::computeSplineFor(std::vector<QPointF> controls, std::vector<int
     {
         for (int j = 0 ; j < k - 1 - i ; ++j)
         {
-            Ptf[j] = (nodal[offset + k + j] - u) / (nodal[offset + k + j] - nodal[offset + 1 + j]) * Ptf[j] +
-                     (u - nodal[offset + 1 + j]) / (nodal[offset + k + j] - nodal[offset + 1 + j]) * Ptf[j + 1];
+
+            Ptf[j] = (nodal[offset + k + j] - u) / (nodal[offset + k + j] - nodal[offset + 1 + j + i]) * Ptf[j] +
+                     (u - nodal[offset + 1 + j + i]) / (nodal[offset + k + j] - nodal[offset + 1 + j + i]) * Ptf[j + 1];
         }
     }
 
