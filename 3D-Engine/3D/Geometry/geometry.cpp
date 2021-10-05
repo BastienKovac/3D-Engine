@@ -33,7 +33,7 @@ void Geometry::refreshGeometryCache()
     // Start index on 1
     int v_index = 1;
 
-    auto indexProperty = OpenMesh::makeTemporaryProperty<OpenMesh::VertexHandle, int>(_mesh, "v_index");
+ //   auto indexProperty = OpenMesh::makeTemporaryProperty<OpenMesh::VertexHandle, int>(_mesh, "v_index");
 
 
     // Refresh normals
@@ -46,7 +46,7 @@ void Geometry::refreshGeometryCache()
 
     for (const auto& vh : _mesh.vertices())
     {
-        indexProperty[vh] = v_index++;
+    //    indexProperty[vh] = v_index++;
 
         // Fill vertex cache
         auto vertex = _mesh.point(vh);
@@ -68,7 +68,7 @@ void Geometry::refreshGeometryCache()
         for (Mesh::FaceVertexIter fv_it = _mesh.fv_iter(*f_it) ; fv_it.is_valid() ; ++fv_it)
         {
             // Fill indices cache
-            _indices.push_back(indexProperty[_mesh.point(*fv_it)]);
+       //     _indices.push_back(indexProperty[_mesh.point(*fv_it)]);
         }
     }
 
