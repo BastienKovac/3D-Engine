@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <3D/openglbase.h>
+#include <Spline/splinesurface.h>
 
 OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps) : QOpenGLWidget(parent)
 {
@@ -19,6 +20,10 @@ OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps) : QOpenGLWidget(parent)
 
     _demoConstructors.push_back( [](int width, int height)->OpenGLBase*{
         return new SimpleScene(width, height);
+    });
+
+    _demoConstructors.push_back( [](int width, int height) -> OpenGLBase* {
+        return new SimpleScene(width, height, new SplineSurface());
     });
 }
 

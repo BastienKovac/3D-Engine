@@ -4,9 +4,10 @@
 #include <QObject>
 
 #include <vector>
-#include <QPoint>
 #include <algorithm>
 #include <utils.h>
+
+#include <QVector3D>
 
 class BSpline : public QObject
 {
@@ -18,21 +19,21 @@ public:
 
     void setDegree(int degree);
 
-    void setControlPoints(std::vector<QPointF> controlPoints);
+    void setControlPoints(std::vector<QVector3D> controlPoints);
 
-    void addControlPoint(QPointF controlPoint);
+    void addControlPoint(QVector3D controlPoint);
 
-    void removeControlPoint(QPointF controlPoint);
+    void removeControlPoint(QVector3D controlPoint);
 
-    void replaceControlPoint(QPointF oldV, QPointF newV);
+    void replaceControlPoint(QVector3D oldV, QVector3D newV);
 
     void setStartFromFirstPoint(bool newStartFromFirstPoint);
 
     void setFinishAtLastPoint(bool newFinishAtLastPoint);
 
-    const std::vector<QPointF> &controlPoints() const;
+    const std::vector<QVector3D> &controlPoints() const;
 
-    const std::vector<QPointF> &computedPoints() const;
+    const std::vector<QVector3D> &computedPoints() const;
 
     void setCloseSpline(bool newCloseSpline);
 
@@ -42,16 +43,16 @@ signals:
 private:
 
     int _degree;
-    std::vector<QPointF> _controlPoints {};
-    std::vector<QPointF> _computedPoints {};
+    std::vector<QVector3D> _controlPoints {};
+    std::vector<QVector3D> _computedPoints {};
 
     bool _startFromFirstPoint = false;
     bool _finishAtLastPoint = false;
     bool _closeSpline = false;
 
-    std::vector<int> getNodalVector(std::vector<QPointF> controls);
-    QPointF computeSplineFor(std::vector<QPointF> controls, std::vector<int> nodal, float u);
-    std::vector<QPointF> computeBSpline(float step = 0.01);
+    std::vector<int> getNodalVector(std::vector<QVector3D> controls);
+    QVector3D computeSplineFor(std::vector<QVector3D> controls, std::vector<int> nodal, float u);
+    std::vector<QVector3D> computeBSpline(float step = 0.01);
 
     void refreshSpline();
 };

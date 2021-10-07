@@ -15,7 +15,7 @@
 class SimpleScene : public OpenGLBase
 {
 public:
-    explicit SimpleScene(int width, int height);
+    explicit SimpleScene(int width, int height, Geometry *geometry = nullptr);
     ~SimpleScene() override;
 
     void resize(int width, int height) override;
@@ -26,7 +26,7 @@ public:
     void keyboardmove(int key, double time) override;
     bool keyboard(unsigned char k) override;
 
-    void refreshScene();
+    void setGeometry(Geometry *geometry);
 
 private:
     // A simple geometry
@@ -58,6 +58,7 @@ private:
     glm::mat4 _view;
     glm::mat4 _projection;
 
+    void refreshScene();
     void clearOpenGLContext();
 };
 

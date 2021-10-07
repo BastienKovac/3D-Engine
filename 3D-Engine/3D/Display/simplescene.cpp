@@ -26,22 +26,29 @@ static const char* fragmentshader_source ="#version 410 core\n\
             color = vec4(normalize(normal)*0.5+0.5, 1.0);\n\
         }\n";
 
-SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _activecamera(0), _camera(nullptr) {
-    // Initialise geometric data
-    std::vector<GLfloat> vertices = {
-        0.5f,  0.5f, 0.0f,  // Top Right
-        0.5f, -0.5f, 0.0f,  // Bottom Right
-       -0.5f, -0.5f, 0.0f,  // Bottom Left
-       -0.5f,  0.5f, 0.0f   // Top Left
-    };
+SimpleScene::SimpleScene(int width, int height, Geometry *geometry) : OpenGLBase(width, height), _activecamera(0), _camera(nullptr) {
 
-    std::vector<GLuint> indices = {
-        0, 1, 3,   // First Triangle
-        1, 2, 3    // Second Triangle
-    };
+    Geometry *newGeometry = geometry;
+    if (geometry == nullptr)
+    {
+        newGeometry = new Geometry();
 
-    _geometry.reset(new Geometry());
-    _geometry.get()->setScene(vertices, indices);
+        // Initialize simple geometric data
+        std::vector<GLfloat> vertices = {
+            0.5f,  0.5f, 0.0f,  // Top Right
+            0.5f, -0.5f, 0.0f,  // Bottom Right
+           -0.5f, -0.5f, 0.0f,  // Bottom Left
+           -0.5f,  0.5f, 0.0f   // Top Left
+        };
+
+        std::vector<GLuint> indices = {
+            0, 1, 3,   // First Triangle
+            1, 2, 3    // Second Triangle
+        };
+
+        newGeometry->setScene(vertices, indices);
+    }
+    _geometry.reset(newGeometry);
 
     _cameraselector.push_back([]()->Camera*{return new EulerCamera(glm::vec3(0.f, 0.f, 1.f));} );
     _cameraselector.push_back([]()->Camera*{return new TrackballCamera(glm::vec3(0.f, 0.f, 1.f),glm::vec3(0.f, 1.f, 0.f),glm::vec3(0.f, 0.f, 0.f));} );
@@ -118,6 +125,12 @@ bool SimpleScene::keyboard(unsigned char k) {
     default:
         return false;
     }
+}
+
+void SimpleScene::setGeometry(Geometry *geometry)
+{
+    _geometry.reset(geometry);
+    refreshScene();
 }
 
 void SimpleScene::refreshScene()

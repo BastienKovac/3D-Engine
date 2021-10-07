@@ -24,6 +24,7 @@ SOURCES += \
     3D/Camera/camera.cpp \
     3D/openglbase.cpp \
     Spline/bspline.cpp \
+    Spline/splinesurface.cpp \
     UI/bsplinechart.cpp \
     glm/detail/glm.cpp \
     main.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     3D/Camera/camera.h \
     3D/openglbase.h \
     Spline/bspline.h \
+    Spline/splinesurface.h \
     UI/bsplinechart.h \
     UI/mainwindow.h \
     3D/openglrenderer.h \

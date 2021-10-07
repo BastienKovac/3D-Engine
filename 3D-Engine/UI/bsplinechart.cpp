@@ -1,5 +1,6 @@
 #include "bsplinechart.h"
 
+#include <QVector3D>
 
 BSplineChartView::BSplineChartView(QWidget *parent) : QChartView(parent)
 {
@@ -33,10 +34,10 @@ void BSplineChartView::displayControlPoints()
 {
     _controlPointsSeries->clear();
     _controlPolygonSeries->clear();
-    for (QPointF control : _spline->controlPoints())
+    for (QVector3D control : _spline->controlPoints())
     {
-        _controlPointsSeries->append(control);
-        _controlPolygonSeries->append(control);
+        _controlPointsSeries->append(QPointF(control.x(), control.y()));
+        _controlPolygonSeries->append(QPointF(control.x(), control.y()));
     }
 }
 
@@ -47,10 +48,10 @@ void BSplineChartView::refreshBSpline()
 
     // 2- Display computed B-Spline
     _splineSeries->clear();
-    std::vector<QPointF> bspline = _spline->computedPoints();
-    for (QPointF value : bspline)
+    std::vector<QVector3D> bspline = _spline->computedPoints();
+    for (QVector3D value : bspline)
     {
-        _splineSeries->append(value);
+        _splineSeries->append(QPointF(value.x(), value.y()));
     }
 
     _chart->createDefaultAxes();
@@ -77,7 +78,7 @@ void BSplineChartView::mousePressEvent(QMouseEvent *event)
         else if (event->button() == Qt::MouseButton::RightButton)
         {
             // Remove selected control point
-            _spline->removeControlPoint(storedPoint.value());
+            _spline->removeControlPoint(QVector3D(storedPoint->x(), storedPoint->y(), 0.));
         }
     }
     else
@@ -85,7 +86,8 @@ void BSplineChartView::mousePressEvent(QMouseEvent *event)
         if (event->button() == Qt::MouseButton::LeftButton)
         {
             // Add new control point at click position
-            _spline->addControlPoint(getEventValue(event));
+            QPointF clickPoint = getEventValue(event);
+            _spline->addControlPoint(QVector3D(clickPoint.x(), clickPoint.y(), 0.));
         }
     }
 }
@@ -123,7 +125,7 @@ void BSplineChartView::mouseMoveEvent(QMouseEvent *event)
         QPointF tmp = _draggedPoint;
 
         _draggedPoint = eventValue;
-        _spline->replaceControlPoint(tmp, _draggedPoint);
+        _spline->replaceControlPoint(QVector3D(tmp.x(), tmp.y(), 0.), QVector3D(_draggedPoint.x(), _draggedPoint.y(), 0.));
     }
 }
 
@@ -171,14 +173,14 @@ std::optional<QPointF> BSplineChartView::getStoredPointFromPosition(QMouseEvent 
 {
     QPointF eventValue = getEventValue(event);
 
-    for (QPointF storedPoint : _spline->controlPoints())
+    for (QVector3D storedPoint : _spline->controlPoints())
     {
         if (storedPoint.x() > eventValue.x() + eventValue.x() * tolerance || storedPoint.x() < eventValue.x() - eventValue.x() * tolerance ||
             storedPoint.y() > eventValue.y() + eventValue.y() * tolerance || storedPoint.y() < eventValue.y() - eventValue.y() * tolerance)
         {
             continue;
         }
-        return storedPoint;
+        return QPointF(storedPoint.x(), storedPoint.y());
     }
 
     return {};

@@ -16,29 +16,29 @@ void BSpline::setDegree(int degree)
     refreshSpline();
 }
 
-void BSpline::setControlPoints(std::vector<QPointF> controlPoints)
+void BSpline::setControlPoints(std::vector<QVector3D> controlPoints)
 {
     _controlPoints.clear();
     _controlPoints.insert(_controlPoints.begin(), controlPoints.begin(), controlPoints.end());
     refreshSpline();
 }
 
-void BSpline::addControlPoint(QPointF controlPoint)
+void BSpline::addControlPoint(QVector3D controlPoint)
 {
     _controlPoints.push_back(controlPoint);
     refreshSpline();
 }
 
-void BSpline::removeControlPoint(QPointF controlPoint)
+void BSpline::removeControlPoint(QVector3D controlPoint)
 {
     _controlPoints.erase(std::remove(_controlPoints.begin(), _controlPoints.end(), controlPoint), _controlPoints.end());
     refreshSpline();
 }
 
-void BSpline::replaceControlPoint(QPointF oldV, QPointF newV)
+void BSpline::replaceControlPoint(QVector3D oldV, QVector3D newV)
 {
     std::replace(_controlPoints.begin(), _controlPoints.end(), oldV, newV);
-refreshSpline();
+    refreshSpline();
 }
 
 void BSpline::setStartFromFirstPoint(bool newStartFromFirstPoint)
@@ -59,12 +59,12 @@ void BSpline::refreshSpline()
     emit splineChanged();
 }
 
-const std::vector<QPointF> &BSpline::controlPoints() const
+const std::vector<QVector3D> &BSpline::controlPoints() const
 {
     return _controlPoints;
 }
 
-std::vector<int> BSpline::getNodalVector(std::vector<QPointF> controls)
+std::vector<int> BSpline::getNodalVector(std::vector<QVector3D> controls)
 {
     int k = _degree + 1;
     int nbPoints = controls.size();
@@ -91,14 +91,14 @@ std::vector<int> BSpline::getNodalVector(std::vector<QPointF> controls)
     return nodal;
 }
 
-std::vector<QPointF> BSpline::computeBSpline(float step)
+std::vector<QVector3D> BSpline::computeBSpline(float step)
 {
     if ((unsigned int) _degree >= _controlPoints.size())
     {
         return {};
     }
 
-    std::vector<QPointF> controls;
+    std::vector<QVector3D> controls;
     controls.insert(controls.end(), _controlPoints.begin(), _controlPoints.end());
 
     if (_closeSpline)
@@ -112,7 +112,7 @@ std::vector<QPointF> BSpline::computeBSpline(float step)
     std::vector<int> nodal = getNodalVector(controls);
     std::vector<float> uValues = arange<float>(nodal[_degree], nodal[controls.size()], step);
 
-    std::vector<QPointF> spline(uValues.size());
+    std::vector<QVector3D> spline(uValues.size());
 
     for (unsigned int i = 0 ; i < uValues.size() ; ++i)
     {
@@ -122,7 +122,7 @@ std::vector<QPointF> BSpline::computeBSpline(float step)
     return spline;
 }
 
-const std::vector<QPointF> &BSpline::computedPoints() const
+const std::vector<QVector3D> &BSpline::computedPoints() const
 {
     return _computedPoints;
 }
@@ -133,13 +133,13 @@ void BSpline::setCloseSpline(bool newCloseSpline)
     refreshSpline();
 }
 
-QPointF BSpline::computeSplineFor(std::vector<QPointF> controls, std::vector<int> nodal, float u)
+QVector3D BSpline::computeSplineFor(std::vector<QVector3D> controls, std::vector<int> nodal, float u)
 {
     int k = _degree + 1;
 
     // Step 1 : Compute relevant control points
 
-    std::vector<QPointF> Ptf(k);
+    std::vector<QVector3D> Ptf(k);
 
     int offset = 0;
     while (u > nodal[k + offset])
