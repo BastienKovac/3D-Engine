@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <utils.h>
+#include <optional>
 
 #include <QVector3D>
 
@@ -53,6 +54,10 @@ private:
     std::vector<int> getNodalVector(std::vector<QVector3D> controls);
     QVector3D computeSplineFor(std::vector<QVector3D> controls, std::vector<int> nodal, float u);
     std::vector<QVector3D> computeBSpline(float step = 0.01);
+
+    std::vector<QVector3D> getControlPoints();
+    float getMinU();
+    float getMaxU();
 
     void refreshSpline();
 };

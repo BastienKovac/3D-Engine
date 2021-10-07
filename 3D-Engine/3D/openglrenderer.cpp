@@ -136,6 +136,7 @@ void OpenGLRenderer::activateDemo(unsigned int numDemo) {
         std::cout << "Activating demo " << numDemo << " : " << std::endl;
         makeCurrent();
         _scene.reset(_demoConstructors[numDemo](width(), height()));
+        _scene->refreshScene();
         doneCurrent();
         update();
     }

@@ -28,6 +28,8 @@ public:
 
     void setGeometry(Geometry *geometry);
 
+    void refreshScene() override;
+
 private:
     // A simple geometry
     std::unique_ptr<Geometry> _geometry;
@@ -58,7 +60,6 @@ private:
     glm::mat4 _view;
     glm::mat4 _projection;
 
-    void refreshScene();
     void clearOpenGLContext();
 };
 

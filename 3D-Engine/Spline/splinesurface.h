@@ -2,11 +2,14 @@
 #define SPLINESURFACE_H
 
 #include <vector>
+#include <optional>
+#include <algorithm>
 
-#include <QPointF>
+#include <QVector3D>
 
 #include <Spline/bspline.h>
 #include <3D/Geometry/geometry.h>
+#include <utils.h>
 
 class SplineSurface : public Geometry
 {
@@ -15,7 +18,9 @@ public:
 
 private:
 
-    std::vector<std::vector<QPointF>> _controlPolygon;
+    std::vector<std::vector<QVector3D>> _controlPolygon;
+
+    void computeSplineGeometry();
 
 };
 

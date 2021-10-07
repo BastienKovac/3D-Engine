@@ -35,8 +35,8 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *mouseEvent) override;
 
 public slots:
-    virtual void updateGL();
     void cleanup();
+    void updateGL();
 
 private:
     // What's being drawn

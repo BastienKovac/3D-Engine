@@ -22,6 +22,8 @@ public:
 
     void toggleDrawmode();
 
+    virtual void refreshScene();
+
 protected:
     int _width;
     int _height;

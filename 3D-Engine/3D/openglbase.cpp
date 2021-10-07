@@ -54,3 +54,8 @@ bool OpenGLBase::keyboard(unsigned char ) {
 void OpenGLBase::toggleDrawmode() {
     _drawFill = !_drawFill;
 }
+
+void OpenGLBase::refreshScene()
+{
+
+}
