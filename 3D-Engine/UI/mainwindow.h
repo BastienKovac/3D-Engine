@@ -18,13 +18,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    void on_degreeSlider_valueChanged(int value);
-    void on_getFirstPointBox_toggled(bool checked);
-    void on_finishAtLastPointBox_toggled(bool checked);
-
-    void on_closseSplineBox_toggled(bool checked);
-
 private:
     Ui::MainWindow *ui;
 
