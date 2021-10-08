@@ -39,6 +39,8 @@ void Geometry::setScene(std::string fileName)
 void Geometry::refreshGeometryCache()
 {
     _vertices.clear();
+    _indices.clear();
+    _normals.clear();
 
     // Start index on 1
     int v_index = 0;
@@ -113,4 +115,18 @@ std::vector<GLuint> Geometry::indices()
         refreshGeometryCache();
     }
     return _indices;
+}
+
+void Geometry::subdivide()
+{
+    for (Mesh::FaceIter f_it = _mesh.faces_begin() ; f_it != _mesh.faces_end() ; ++f_it)
+    {
+        for (Mesh::FaceVertexIter fv_it = _mesh.fv_iter(*f_it) ; fv_it.is_valid() ; ++fv_it)
+        {
+
+
+        }
+    }
+
+    _dirty = false;
 }

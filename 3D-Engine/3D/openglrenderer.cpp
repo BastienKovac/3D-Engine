@@ -80,7 +80,7 @@ void OpenGLRenderer::keyPressEvent(QKeyEvent *keyEvent)
         update();
         break;
     default :
-        // Other keys are transmitted to the scene
+        // Other keys are transmitted to the scene, opening an OpenGL context
         if (_scene->keyboard(keyEvent->text().toStdString()[0]))
         {
             update();

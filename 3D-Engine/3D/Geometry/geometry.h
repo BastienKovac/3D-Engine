@@ -33,6 +33,8 @@ public:
     std::vector<GLfloat> normals();
     std::vector<GLuint> indices();
 
+    void subdivide();
+
 private:
     // OpenMesh geometry
     Mesh _mesh;
