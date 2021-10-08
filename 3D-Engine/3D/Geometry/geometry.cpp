@@ -31,12 +31,12 @@ void Geometry::refreshGeometryCache()
     _vertices.clear();
 
     // Start index on 1
-    int v_index = 1;
+    int v_index = 0;
 
- //   auto indexProperty = OpenMesh::makeTemporaryProperty<OpenMesh::VertexHandle, int>(_mesh, "v_index");
-
+    auto indexProperty = OpenMesh::makeTemporaryProperty<OpenMesh::VertexHandle, int>(_mesh, "v_index");
 
     // Refresh normals
+    _mesh.request_vertex_normals();
     // we need face normals to update the vertex normals
     _mesh.request_face_normals();
     // let the mesh update the normals
@@ -46,7 +46,7 @@ void Geometry::refreshGeometryCache()
 
     for (const auto& vh : _mesh.vertices())
     {
-    //    indexProperty[vh] = v_index++;
+        indexProperty[vh] = v_index++;
 
         // Fill vertex cache
         auto vertex = _mesh.point(vh);
@@ -68,10 +68,11 @@ void Geometry::refreshGeometryCache()
         for (Mesh::FaceVertexIter fv_it = _mesh.fv_iter(*f_it) ; fv_it.is_valid() ; ++fv_it)
         {
             // Fill indices cache
-       //     _indices.push_back(indexProperty[_mesh.point(*fv_it)]);
+            _indices.push_back(indexProperty[*fv_it]);
         }
     }
 
+    _mesh.release_vertex_normals();
     _mesh.garbage_collection();
     _dirty = false;
 }
