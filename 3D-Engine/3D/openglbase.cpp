@@ -51,6 +51,12 @@ bool OpenGLBase::keyboard(unsigned char ) {
     return false;
 }
 
+void OpenGLBase::loadSceneFromFile(std::string fileName)
+{
+    std::cerr << "Loading from file unimplemented, " << fileName << " couldn't be loaded" << std::endl;
+    exit(1);
+}
+
 void OpenGLBase::toggleDrawmode() {
     _drawFill = !_drawFill;
 }

@@ -1,8 +1,9 @@
 #ifndef OPENGLRENDERER_H
 #define OPENGLRENDERER_H
 
-#include <QColor>
+#include <string>
 
+#include <QColor>
 #include <QtOpenGL>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
@@ -24,6 +25,7 @@ public:
     OpenGLRenderer(QWidget *parent = nullptr, int fps = 60);
 
     void activateDemo(unsigned int numDemo);
+    void loadSceneFromFile(std::string fileName);
 
 protected:
     virtual void initializeGL() override;

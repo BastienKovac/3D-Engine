@@ -2,6 +2,9 @@
 #define GEOMETRY_H
 
 #include <vector>
+#include <iostream>
+#include <string>
+
 #include <QObject>
 
 #include <glm/glm.hpp>
@@ -13,6 +16,7 @@
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 typedef OpenMesh::TriMesh_ArrayKernelT<> Mesh;
 #include <OpenMesh/Core/Utils/PropertyManager.hh>
+#include <OpenMesh/Core/IO/MeshIO.hh>
 
 class Geometry : QObject
 {
@@ -23,13 +27,11 @@ public:
     ~Geometry();
 
     void setScene(std::vector<GLfloat> vertices, std::vector<GLuint> indices);
+    void setScene(std::string fileName);
 
     std::vector<GLfloat> vertices();
     std::vector<GLfloat> normals();
     std::vector<GLuint> indices();
-
-signals:
-    void geometryRefreshed();
 
 private:
     // OpenMesh geometry

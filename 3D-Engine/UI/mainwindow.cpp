@@ -23,3 +23,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+void MainWindow::on_loadFileButton_clicked()
+{
+    auto filePath = QFileDialog::getOpenFileName(this, tr("Open OBJ File"), "/home", tr("OBJ Files (*.obj)"));
+    if (filePath != nullptr)
+    {
+        ui->renderer->loadSceneFromFile(filePath.toStdString());
+    }
+}

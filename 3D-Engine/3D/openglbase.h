@@ -2,8 +2,11 @@
 #define OPENGLBASE_H
 
 #include <vector>
+#include <iostream>
+#include <string>
 
 #include <QOpenGLFunctions_4_1_Core>
+#include <QString>
 
 class OpenGLBase : public QOpenGLFunctions_4_1_Core
 {
@@ -19,6 +22,8 @@ public:
     virtual void mousewheel(float delta);
     virtual void keyboardmove(int key, double time);
     virtual bool keyboard(unsigned char k);
+
+    virtual void loadSceneFromFile(std::string fileName);
 
     void toggleDrawmode();
 

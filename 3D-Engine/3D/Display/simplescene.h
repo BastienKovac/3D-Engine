@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <functional>
+#include <string>
 
 class SimpleScene : public OpenGLBase
 {
@@ -27,6 +28,8 @@ public:
     bool keyboard(unsigned char k) override;
 
     void refreshScene();
+
+    void loadSceneFromFile(std::string fileName) override;
 
 private:
     // A simple geometry

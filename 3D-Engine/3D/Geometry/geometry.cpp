@@ -23,7 +23,17 @@ void Geometry::setScene(std::vector<GLfloat> vertices, std::vector<GLuint> indic
     }
 
     _dirty = true;
-    emit geometryRefreshed();
+}
+
+void Geometry::setScene(std::string fileName)
+{
+    if (!OpenMesh::IO::read_mesh(_mesh, fileName))
+    {
+      std::cerr << "Couldn't read file " << fileName << std::endl;
+      exit(1);
+    }
+
+    _dirty = true;
 }
 
 void Geometry::refreshGeometryCache()

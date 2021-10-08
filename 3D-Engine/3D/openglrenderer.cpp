@@ -126,6 +126,13 @@ void OpenGLRenderer::mouseMoveEvent(QMouseEvent *mouseEvent) {
     update();
 }
 
+void OpenGLRenderer::loadSceneFromFile(std::string fileName)
+{
+    makeCurrent();
+    _scene->loadSceneFromFile(fileName);
+    doneCurrent();
+}
+
 void OpenGLRenderer::activateDemo(unsigned int numDemo) {
     if (numDemo < _demoConstructors.size()) {
         std::cout << "Activating demo " << numDemo << " : " << std::endl;

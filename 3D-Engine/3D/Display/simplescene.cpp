@@ -41,7 +41,7 @@ SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _ac
     };
 
     _geometry.reset(new Geometry());
-    _geometry.get()->setScene(vertices, indices);
+    _geometry->setScene(vertices, indices);
 
     _cameraselector.push_back([]()->Camera*{return new EulerCamera(glm::vec3(0.f, 0.f, 1.f));} );
     _cameraselector.push_back([]()->Camera*{return new TrackballCamera(glm::vec3(0.f, 0.f, 1.f),glm::vec3(0.f, 1.f, 0.f),glm::vec3(0.f, 0.f, 0.f));} );
@@ -54,7 +54,6 @@ SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _ac
     _projection = glm::perspective(_camera->zoom(), float(_width) / _height, 0.1f, 100.0f);
 
     refreshScene();
-    //connect(_geometry.get(), SIGNAL(geometryRefreshed()), this, SLOT(refreshScene()));
 }
 
 void SimpleScene::clearOpenGLContext()
@@ -203,4 +202,10 @@ void SimpleScene::refreshScene()
 
     glDeleteShader(vertexshader);
     glDeleteShader(fragmentshader);
+}
+
+void SimpleScene::loadSceneFromFile(std::string fileName)
+{
+    _geometry->setScene(fileName);
+    refreshScene();
 }
