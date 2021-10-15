@@ -1,7 +1,7 @@
 QT       += core gui opengl charts
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-LIBS += -L/usr/local/lib
+LIBS += -L/usr/local/lib -lstdc++fs
 
 # Include openGL lib
 win32 {
@@ -11,7 +11,6 @@ win32 {
 linux-g++* {
     LIBS += -lGLU
 }
-
 
 QMAKE_CXXFLAGS += -std=c++17
 CONFIG += c++17
@@ -30,7 +29,8 @@ SOURCES += \
     UI/mainwindow.cpp \
     3D/openglrenderer.cpp \
     3D/Geometry/geometry.cpp \
-    3D/Display/simplescene.cpp
+    3D/Display/simplescene.cpp \
+    3D/Geometry/multiplegeometry.cpp
 
 HEADERS += \
     3D/Camera/camera.h \
@@ -298,7 +298,8 @@ HEADERS += \
     glm/vector_relational.hpp \
     utils.h \
     3D/Geometry/geometry.h \
-    3D/Display/simplescene.h
+    3D/Display/simplescene.h \
+    3D/Geometry/multiplegeometry.h
 
 FORMS += \
     UI/mainwindow.ui

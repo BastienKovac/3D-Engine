@@ -4,6 +4,7 @@
 #include <3D/openglbase.h>
 #include <3D/Camera/camera.h>
 #include <3D/Geometry/geometry.h>
+#include <3D/Geometry/multiplegeometry.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -32,8 +33,8 @@ public:
     void loadSceneFromFile(std::string fileName) override;
 
 private:
-    // A simple geometry
-    std::unique_ptr<Geometry> _geometry;
+    // A simple list of object geometries
+    std::unique_ptr<MultipleGeometry> _geometry;
 
     // OpenGL object for geometry
     GLuint _vao;

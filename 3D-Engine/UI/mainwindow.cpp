@@ -26,7 +26,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_loadFileButton_clicked()
 {
-    auto filePath = QFileDialog::getOpenFileName(this, tr("Open OBJ File"), "/home", tr("OBJ Files (*.obj)"));
+    auto filePath = QFileDialog::getOpenFileName(this, tr("Open OBJ File"), "~", tr("OBJ Files (*.obj)"));
+    if (filePath != nullptr)
+    {
+        ui->renderer->loadSceneFromFile(filePath.toStdString());
+    }
+}
+
+void MainWindow::on_loadSceneButton_clicked()
+{
+    auto filePath = QFileDialog::getExistingDirectory(this, tr("Open scene directory"), "~");
     if (filePath != nullptr)
     {
         ui->renderer->loadSceneFromFile(filePath.toStdString());

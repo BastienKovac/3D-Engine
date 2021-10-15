@@ -18,7 +18,7 @@ typedef OpenMesh::TriMesh_ArrayKernelT<> Mesh;
 #include <OpenMesh/Core/Utils/PropertyManager.hh>
 #include <OpenMesh/Core/IO/MeshIO.hh>
 
-class Geometry : QObject
+class Geometry : public QObject
 {
     Q_OBJECT
 
@@ -26,12 +26,10 @@ public:
     Geometry(QObject *parent = nullptr);
     ~Geometry();
 
-    void setScene(std::vector<GLfloat> vertices, std::vector<GLuint> indices);
-    void setScene(std::string fileName);
-
-    std::vector<GLfloat> vertices();
-    std::vector<GLfloat> normals();
-    std::vector<GLuint> indices();
+    virtual void setScene(std::string fileName);
+    virtual std::vector<GLfloat> vertices();
+    virtual std::vector<GLfloat> normals();
+    virtual std::vector<GLuint> indices();
 
     void subdivide();
 

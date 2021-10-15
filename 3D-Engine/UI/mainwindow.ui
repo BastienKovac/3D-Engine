@@ -46,7 +46,14 @@
         <item row="0" column="0">
          <widget class="QPushButton" name="loadFileButton">
           <property name="text">
-           <string>Load File</string>
+           <string>Load Object</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="loadSceneButton">
+          <property name="text">
+           <string>Load Scene</string>
           </property>
          </widget>
         </item>

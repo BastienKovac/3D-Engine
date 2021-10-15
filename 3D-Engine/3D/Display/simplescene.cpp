@@ -27,7 +27,7 @@ static const char* fragmentshader_source ="#version 410 core\n\
         }\n";
 
 SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _activecamera(0), _camera(nullptr) {
-    _geometry.reset(new Geometry());
+    _geometry.reset(new MultipleGeometry());
 
     _cameraselector.push_back([]()->Camera*{return new EulerCamera(glm::vec3(0.f, 0.f, 1.f));} );
     _cameraselector.push_back([]()->Camera*{return new TrackballCamera(glm::vec3(0.f, 0.f, 1.f),glm::vec3(0.f, 1.f, 0.f),glm::vec3(0.f, 0.f, 0.f));} );

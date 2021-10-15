@@ -10,21 +10,6 @@ Geometry::~Geometry()
 
 }
 
-void Geometry::setScene(std::vector<GLfloat> vertices, std::vector<GLuint> indices)
-{
-    for (unsigned int i = 0 ; i < vertices.size() ; i += 3)
-    {
-        _vertexHandles.push_back(_mesh.add_vertex(Mesh::Point(vertices[i], vertices[i + 1], vertices[i + 2])));
-    }
-
-    for (unsigned int i = 0 ; i < indices.size() ; i += 3)
-    {
-        _mesh.add_face({_vertexHandles[indices[i]], _vertexHandles[indices[i + 1]], _vertexHandles[indices[i + 2]]});
-    }
-
-    _dirty = true;
-}
-
 void Geometry::setScene(std::string fileName)
 {
     if (!OpenMesh::IO::read_mesh(_mesh, fileName))
