@@ -25,8 +25,6 @@ DEFINES += OM_STATIC_BUILD
 SOURCES += \
     3D/Camera/camera.cpp \
     3D/openglbase.cpp \
-    Spline/bspline.cpp \
-    UI/bsplinechart.cpp \
     glm/detail/glm.cpp \
     main.cpp \
     UI/mainwindow.cpp \
@@ -37,8 +35,6 @@ SOURCES += \
 HEADERS += \
     3D/Camera/camera.h \
     3D/openglbase.h \
-    Spline/bspline.h \
-    UI/bsplinechart.h \
     UI/mainwindow.h \
     3D/openglrenderer.h \
     glm/common.hpp \
