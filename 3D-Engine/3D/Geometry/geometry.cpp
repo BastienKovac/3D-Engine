@@ -226,32 +226,37 @@ void Geometry::splitEdge(const Mesh::EdgeHandle &e_h)
     Mesh::HalfedgeHandle newOpposingHalfEdge;
     Mesh::HalfedgeHandle tmpHalfEdge;
 
-    Mesh::VertexHandle vh;
-    Mesh::VertexHandle vh1(_mesh.to_vertex_handle(halfOne));
+    Mesh::VertexHandle currentVertex(_mesh.to_vertex_handle(halfOne));
     Mesh::Point midPoint(_mesh.point(_mesh.to_vertex_handle(halfOne)));
 
     midPoint += _mesh.point(_mesh.to_vertex_handle(halfTwo));
     midPoint *= 0.5;
 
     // Create a temporary new vertex at the mid point, will be moved towards the computed position for given edge
-    vh = _mesh.new_vertex(midPoint);
-    _mesh.property(_vp_pos, vh) = _mesh.property(_ep_pos, e_h);
+    Mesh::VertexHandle newVertex = _mesh.new_vertex(midPoint);
+    _mesh.property(_vp_pos, newVertex) = _mesh.property(_ep_pos, e_h);
 
     // Re-link mesh entities by iterating over the relevant half-edges
     if (_mesh.is_boundary(e_h))
     {
-        for (tmpHalfEdge = halfOne ; _mesh.next_halfedge_handle(tmpHalfEdge) != halfTwo ; tmpHalfEdge = _mesh.opposite_halfedge_handle(_mesh.next_halfedge_handle(tmpHalfEdge)))
-        {}
+        tmpHalfEdge = halfOne;
+        while (_mesh.next_halfedge_handle(tmpHalfEdge) != halfTwo)
+        {
+            tmpHalfEdge = _mesh.opposite_halfedge_handle(_mesh.next_halfedge_handle(tmpHalfEdge));
+        }
     }
     else
     {
-        for (tmpHalfEdge = _mesh.next_halfedge_handle(halfTwo) ; _mesh.next_halfedge_handle(tmpHalfEdge) != halfTwo ; tmpHalfEdge = _mesh.next_halfedge_handle(tmpHalfEdge))
-        {}
+        tmpHalfEdge = _mesh.next_halfedge_handle(halfTwo);
+        while(_mesh.next_halfedge_handle(tmpHalfEdge) != halfTwo)
+        {
+           tmpHalfEdge = _mesh.next_halfedge_handle(tmpHalfEdge);
+        }
     }
 
-    newHalfEdge = _mesh.new_edge(vh, vh1);
+    newHalfEdge = _mesh.new_edge(newVertex, currentVertex);
     newOpposingHalfEdge = _mesh.opposite_halfedge_handle(newHalfEdge);
-    _mesh.set_vertex_handle(halfOne, vh);
+    _mesh.set_vertex_handle(halfOne, newVertex);
 
     _mesh.set_next_halfedge_handle(tmpHalfEdge, newOpposingHalfEdge);
     _mesh.set_next_halfedge_handle(newHalfEdge, _mesh.next_halfedge_handle(halfOne));
@@ -265,17 +270,17 @@ void Geometry::splitEdge(const Mesh::EdgeHandle &e_h)
     }
 
     _mesh.set_face_handle(newHalfEdge, _mesh.face_handle(halfOne));
-    _mesh.set_halfedge_handle(vh, newHalfEdge);
+    _mesh.set_halfedge_handle(newVertex, newHalfEdge);
 
     if (!_mesh.is_boundary(halfOne))
     {
         _mesh.set_halfedge_handle(_mesh.face_handle(halfOne), halfOne);
     }
 
-    _mesh.set_halfedge_handle(vh1, newOpposingHalfEdge);
+    _mesh.set_halfedge_handle(currentVertex, newOpposingHalfEdge);
 
-    _mesh.adjust_outgoing_halfedge(vh);
-    _mesh.adjust_outgoing_halfedge(vh1);
+    _mesh.adjust_outgoing_halfedge(newVertex);
+    _mesh.adjust_outgoing_halfedge(currentVertex);
 }
 
 void Geometry::splitFace(const Mesh::FaceHandle &f_h)
@@ -292,45 +297,44 @@ void Geometry::splitFace(const Mesh::FaceHandle &f_h)
 void Geometry::cutCorner(const Mesh::HalfedgeHandle &h_e)
 {
     // Define Halfedge Handles
-    Mesh::HalfedgeHandle heh1(h_e);
-    Mesh::HalfedgeHandle heh5(heh1);
-    Mesh::HalfedgeHandle heh6(_mesh.next_halfedge_handle(heh1));
+    Mesh::HalfedgeHandle halfEdgeOne(h_e);
+    Mesh::HalfedgeHandle halfEdgeFive(halfEdgeOne);
+    Mesh::HalfedgeHandle halfEdgeSix(_mesh.next_halfedge_handle(halfEdgeOne));
 
     // Cycle around the polygon to find correct Halfedge
-    for (; _mesh.next_halfedge_handle(_mesh.next_halfedge_handle(heh5)) != heh1;
-         heh5 = _mesh.next_halfedge_handle(heh5))
-    {}
+    while (_mesh.next_halfedge_handle(_mesh.next_halfedge_handle(halfEdgeFive)) != halfEdgeOne)
+    {
+        halfEdgeFive = _mesh.next_halfedge_handle(halfEdgeFive);
+    }
 
-    Mesh::VertexHandle
-            vh1 = _mesh.to_vertex_handle(heh1),
-            vh2 = _mesh.to_vertex_handle(heh5);
+    Mesh::VertexHandle vertexOne = _mesh.to_vertex_handle(halfEdgeOne);
+    Mesh::VertexHandle vertexTwo = _mesh.to_vertex_handle(halfEdgeFive);
 
-    Mesh::HalfedgeHandle
-            heh2(_mesh.next_halfedge_handle(heh5)),
-            heh3(_mesh.new_edge(vh1, vh2)),
-            heh4(_mesh.opposite_halfedge_handle(heh3));
+    Mesh::HalfedgeHandle halfEdgeTwo(_mesh.next_halfedge_handle(halfEdgeFive));
+    // Half-Edge three => New half-edge
+    Mesh::HalfedgeHandle halfEdgeThree(_mesh.new_edge(vertexOne, vertexTwo));
+    Mesh::HalfedgeHandle halfEdgeFour(_mesh.opposite_halfedge_handle(halfEdgeThree));
 
     // Old and new Face
-    Mesh::FaceHandle     fh_old(_mesh.face_handle(heh6));
-    Mesh::FaceHandle     fh_new(_mesh.new_face());
-
+    Mesh::FaceHandle oldFace(_mesh.face_handle(halfEdgeSix));
+    Mesh::FaceHandle newFace(_mesh.new_face());
 
     // Re-Set Handles around old Face
-    _mesh.set_next_halfedge_handle(heh4, heh6);
-    _mesh.set_next_halfedge_handle(heh5, heh4);
+    _mesh.set_next_halfedge_handle(halfEdgeFour, halfEdgeSix);
+    _mesh.set_next_halfedge_handle(halfEdgeFive, halfEdgeFour);
 
-    _mesh.set_face_handle(heh4, fh_old);
-    _mesh.set_face_handle(heh5, fh_old);
-    _mesh.set_face_handle(heh6, fh_old);
-    _mesh.set_halfedge_handle(fh_old, heh4);
+    _mesh.set_face_handle(halfEdgeFour, oldFace);
+    _mesh.set_face_handle(halfEdgeFive, oldFace);
+    _mesh.set_face_handle(halfEdgeSix, oldFace);
+    _mesh.set_halfedge_handle(oldFace, halfEdgeFour);
 
     // Re-Set Handles around new Face
-    _mesh.set_next_halfedge_handle(heh1, heh3);
-    _mesh.set_next_halfedge_handle(heh3, heh2);
+    _mesh.set_next_halfedge_handle(halfEdgeOne, halfEdgeThree);
+    _mesh.set_next_halfedge_handle(halfEdgeThree, halfEdgeTwo);
 
-    _mesh.set_face_handle(heh1, fh_new);
-    _mesh.set_face_handle(heh2, fh_new);
-    _mesh.set_face_handle(heh3, fh_new);
+    _mesh.set_face_handle(halfEdgeOne, newFace);
+    _mesh.set_face_handle(halfEdgeTwo, newFace);
+    _mesh.set_face_handle(halfEdgeThree, newFace);
 
-    _mesh.set_halfedge_handle(fh_new, heh1);
+    _mesh.set_halfedge_handle(newFace, halfEdgeOne);
 }
