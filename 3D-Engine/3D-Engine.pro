@@ -15,6 +15,9 @@ linux-g++* {
 QMAKE_CXXFLAGS += -std=c++17
 CONFIG += c++17
 
+# Allows for IO operations against static build for OpenMesh
+DEFINES += OM_STATIC_BUILD
+
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
@@ -29,8 +32,7 @@ SOURCES += \
     UI/mainwindow.cpp \
     3D/openglrenderer.cpp \
     3D/Geometry/geometry.cpp \
-    3D/Display/simplescene.cpp \
-    3D/Geometry/multiplegeometry.cpp
+    3D/Display/simplescene.cpp
 
 HEADERS += \
     3D/Camera/camera.h \
@@ -299,7 +301,6 @@ HEADERS += \
     utils.h \
     3D/Geometry/geometry.h \
     3D/Display/simplescene.h \
-    3D/Geometry/multiplegeometry.h
 
 FORMS += \
     UI/mainwindow.ui

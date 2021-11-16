@@ -23,8 +23,6 @@ public:
 private slots:
     void on_loadFileButton_clicked();
 
-    void on_loadSceneButton_clicked();
-
 private:
     Ui::MainWindow *ui;
 

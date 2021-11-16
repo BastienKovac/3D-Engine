@@ -79,6 +79,12 @@ void OpenGLRenderer::keyPressEvent(QKeyEvent *keyEvent)
         _scene->toggleDrawmode();
         update();
         break;
+    case Qt::Key_Plus:
+        makeCurrent();
+        _scene->subdivideScene();
+        update();
+        doneCurrent();
+        break;
     default :
         // Other keys are transmitted to the scene, opening an OpenGL context
         if (_scene->keyboard(keyEvent->text().toStdString()[0]))

@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <cmath>
 
 #include <QObject>
 
@@ -17,6 +18,7 @@
 typedef OpenMesh::TriMesh_ArrayKernelT<> Mesh;
 #include <OpenMesh/Core/Utils/PropertyManager.hh>
 #include <OpenMesh/Core/IO/MeshIO.hh>
+#include <OpenMesh/Tools/Utils/MeshCheckerT.hh>
 
 class Geometry : public QObject
 {
@@ -45,7 +47,16 @@ private:
     std::vector<GLfloat> _normals;
     std::vector<GLuint> _indices;
 
+    void updateExistingVertex(const Mesh::VertexHandle& v_h);
+    void addMidPoint(const Mesh::EdgeHandle& e_h);
+    void splitEdge(const Mesh::EdgeHandle& e_h);
+    void splitFace(const Mesh::FaceHandle& f_h);
+    void cutCorner(const Mesh::HalfedgeHandle& h_e);
+
     void refreshGeometryCache();
+
+    OpenMesh::VPropHandleT<Mesh::Point> _vp_pos;
+    OpenMesh::EPropHandleT<Mesh::Point> _ep_pos;
 };
 
 #endif // GEOMETRY_H

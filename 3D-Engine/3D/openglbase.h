@@ -24,6 +24,7 @@ public:
     virtual bool keyboard(unsigned char k);
 
     virtual void loadSceneFromFile(std::string fileName);
+    virtual void subdivideScene();
 
     void toggleDrawmode();
 

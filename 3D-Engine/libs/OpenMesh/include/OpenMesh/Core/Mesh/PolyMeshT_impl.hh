@@ -155,13 +155,13 @@ PolyMeshT<Kernel>::calc_face_normal_impl(FaceHandle, PointIsNot3DTag) const
 {
   // Dummy fallback implementation
   // Returns just an initialized all 0 normal
-  // This function is only used if we don't hate a matching implementation
+  // This function is only used if we don't have a matching implementation
   // for normal computation with the current vector type defined in the mesh traits
 
   assert(false);
 
   Normal normal;
-  vectorize(normal,0);
+  vectorize(normal,Scalar(0));
   return normal;
 }
 
@@ -179,6 +179,14 @@ calc_face_normal(const Point& _p0,
     PointIs3DTag,
     PointIsNot3DTag
   >::Result());
+}
+
+template<class Kernel>
+typename PolyMeshT<Kernel>::Normal
+PolyMeshT<Kernel>::
+calc_normal(FaceHandle _fh) const
+{
+  return calc_face_normal(_fh);
 }
 
 template <class Kernel>
@@ -223,13 +231,13 @@ PolyMeshT<Kernel>::calc_face_normal_impl(const Point&, const Point&, const Point
 
   // Dummy fallback implementation
   // Returns just an initialized all 0 normal
-  // This function is only used if we don't hate a matching implementation
+  // This function is only used if we don't have a matching implementation
   // for normal computation with the current vector type defined in the mesh traits
 
   assert(false);
 
   Normal normal;
-  vectorize(normal,0);
+  vectorize(normal,Scalar(0));
   return normal;
 }
 
@@ -241,7 +249,7 @@ PolyMeshT<Kernel>::
 calc_face_centroid(FaceHandle _fh) const
 {
   Point _pt;
-  vectorize(_pt, 0);
+  vectorize(_pt, Scalar(0));
   Scalar valence = 0.0;
   for (ConstFaceVertexIter cfv_it = this->cfv_iter(_fh); cfv_it.is_valid(); ++cfv_it, valence += 1.0)
   {
@@ -250,8 +258,58 @@ calc_face_centroid(FaceHandle _fh) const
   _pt /= valence;
   return _pt;
 }
+
 //-----------------------------------------------------------------------------
 
+template<class Kernel>
+typename PolyMeshT<Kernel>::Point
+PolyMeshT<Kernel>::
+calc_centroid(FaceHandle _fh) const
+{
+  return calc_face_centroid(_fh);
+}
+
+//-----------------------------------------------------------------------------
+
+template<class Kernel>
+typename PolyMeshT<Kernel>::Point
+PolyMeshT<Kernel>::
+calc_centroid(EdgeHandle _eh) const
+{
+  return this->calc_edge_midpoint(_eh);
+}
+
+//-----------------------------------------------------------------------------
+
+template<class Kernel>
+typename PolyMeshT<Kernel>::Point
+PolyMeshT<Kernel>::
+calc_centroid(HalfedgeHandle _heh) const
+{
+  return this->calc_edge_midpoint(this->edge_handle(_heh));
+}
+
+//-----------------------------------------------------------------------------
+
+template<class Kernel>
+typename PolyMeshT<Kernel>::Point
+PolyMeshT<Kernel>::
+calc_centroid(VertexHandle _vh) const
+{
+  return this->point(_vh);
+}
+
+//-----------------------------------------------------------------------------
+
+template<class Kernel>
+typename PolyMeshT<Kernel>::Point
+PolyMeshT<Kernel>::
+calc_centroid(MeshHandle /*_mh*/) const
+{
+  return this->vertices().avg(getPointsProperty(*this));
+}
+
+//-----------------------------------------------------------------------------
 
 template <class Kernel>
 void
@@ -355,6 +413,18 @@ calc_halfedge_normal(HalfedgeHandle _heh, const double _feature_angle) const
 
 
 template <class Kernel>
+typename PolyMeshT<Kernel>::Normal
+PolyMeshT<Kernel>::
+calc_normal(HalfedgeHandle _heh, const double _feature_angle) const
+{
+  return calc_halfedge_normal(_heh, _feature_angle);
+}
+
+
+//-----------------------------------------------------------------------------
+
+
+template <class Kernel>
 bool
 PolyMeshT<Kernel>::
 is_estimated_feature_edge(HalfedgeHandle _heh, const double _feature_angle) const
@@ -404,7 +474,7 @@ template <class Kernel>
 void PolyMeshT<Kernel>::
 calc_vertex_normal_fast(VertexHandle _vh, Normal& _n) const
 {
-  vectorize(_n, 0.0);
+  vectorize(_n, Scalar(0));
   for (ConstVertexFaceIter vf_it = this->cvf_iter(_vh); vf_it.is_valid(); ++vf_it)
     _n += this->normal(*vf_it);
 }
@@ -414,7 +484,7 @@ template <class Kernel>
 void PolyMeshT<Kernel>::
 calc_vertex_normal_correct(VertexHandle _vh, Normal& _n) const
 {
-  vectorize(_n, 0.0);
+  vectorize(_n, Scalar(0));
   ConstVertexIHalfedgeIter cvih_it = this->cvih_iter(_vh);
   if (! cvih_it.is_valid() )
   {//don't crash on isolated vertices
@@ -435,6 +505,9 @@ calc_vertex_normal_correct(VertexHandle _vh, Normal& _n) const
     in_he_vec = out_he_vec;
     in_he_vec *= -1;//change the orientation
   }
+  Scalar length = norm(_n);
+  if (length != 0.0)
+    _n *= (Scalar(1.0)/length);
 }
 
 //-----------------------------------------------------------------------------
@@ -459,6 +532,17 @@ calc_vertex_normal_loop(VertexHandle _vh, Normal& _n) const
 
 //-----------------------------------------------------------------------------
 
+template<class Kernel>
+typename PolyMeshT<Kernel>::Normal
+PolyMeshT<Kernel>::
+calc_normal(VertexHandle _vh) const
+{
+  Normal n;
+  calc_vertex_normal_correct(_vh, n);
+  return n;
+}
+
+//-----------------------------------------------------------------------------
 
 template <class Kernel>
 void

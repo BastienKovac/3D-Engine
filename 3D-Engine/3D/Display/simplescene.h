@@ -4,7 +4,6 @@
 #include <3D/openglbase.h>
 #include <3D/Camera/camera.h>
 #include <3D/Geometry/geometry.h>
-#include <3D/Geometry/multiplegeometry.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,12 +28,13 @@ public:
     bool keyboard(unsigned char k) override;
 
     void refreshScene();
+    void subdivideScene();
 
     void loadSceneFromFile(std::string fileName) override;
 
 private:
     // A simple list of object geometries
-    std::unique_ptr<MultipleGeometry> _geometry;
+    std::unique_ptr<Geometry> _geometry;
 
     // OpenGL object for geometry
     GLuint _vao;

@@ -27,7 +27,7 @@ static const char* fragmentshader_source ="#version 410 core\n\
         }\n";
 
 SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _activecamera(0), _camera(nullptr) {
-    _geometry.reset(new MultipleGeometry());
+    _geometry.reset(new Geometry());
 
     _cameraselector.push_back([]()->Camera*{return new EulerCamera(glm::vec3(0.f, 0.f, 1.f));} );
     _cameraselector.push_back([]()->Camera*{return new TrackballCamera(glm::vec3(0.f, 0.f, 1.f),glm::vec3(0.f, 1.f, 0.f),glm::vec3(0.f, 0.f, 0.f));} );
@@ -99,10 +99,6 @@ bool SimpleScene::keyboard(unsigned char k) {
         _activecamera = (_activecamera + 1) % 2;
         _camera.reset(_cameraselector[_activecamera]());
         _camera->setviewport(glm::vec4(0.f, 0.f, _width, _height));
-        return true;
-    case '+':
-        _geometry->subdivide();
-        refreshScene();
         return true;
     default:
         return false;
@@ -192,6 +188,12 @@ void SimpleScene::refreshScene()
 
     glDeleteShader(vertexshader);
     glDeleteShader(fragmentshader);
+}
+
+void SimpleScene::subdivideScene()
+{
+    _geometry->subdivide();
+    refreshScene();
 }
 
 void SimpleScene::loadSceneFromFile(std::string fileName)

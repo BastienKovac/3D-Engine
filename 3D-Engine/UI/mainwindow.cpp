@@ -32,12 +32,3 @@ void MainWindow::on_loadFileButton_clicked()
         ui->renderer->loadSceneFromFile(filePath.toStdString());
     }
 }
-
-void MainWindow::on_loadSceneButton_clicked()
-{
-    auto filePath = QFileDialog::getExistingDirectory(this, tr("Open scene directory"), "~");
-    if (filePath != nullptr)
-    {
-        ui->renderer->loadSceneFromFile(filePath.toStdString());
-    }
-}

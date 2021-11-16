@@ -57,6 +57,12 @@ void OpenGLBase::loadSceneFromFile(std::string fileName)
     exit(1);
 }
 
+void OpenGLBase::subdivideScene()
+{
+    std::cerr << "Subdivision unimplemented" << std::endl;
+    exit(1);
+}
+
 void OpenGLBase::toggleDrawmode() {
     _drawFill = !_drawFill;
 }
