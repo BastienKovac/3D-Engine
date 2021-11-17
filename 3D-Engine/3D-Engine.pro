@@ -30,7 +30,8 @@ SOURCES += \
     UI/mainwindow.cpp \
     3D/openglrenderer.cpp \
     3D/Geometry/geometry.cpp \
-    3D/Display/simplescene.cpp
+    3D/Display/simplescene.cpp \
+    3D/Shaders/shader.cpp
 
 HEADERS += \
     3D/Camera/camera.h \
@@ -297,9 +298,13 @@ HEADERS += \
     utils.h \
     3D/Geometry/geometry.h \
     3D/Display/simplescene.h \
+    3D/Shaders/shader.h
 
 FORMS += \
     UI/mainwindow.ui
+
+OTHER_FILES += \
+    3D/Shaders/Shaders/*
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

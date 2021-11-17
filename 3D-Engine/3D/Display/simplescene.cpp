@@ -1,30 +1,6 @@
 #include "simplescene.h"
-#include <iostream>
 
 #define deg2rad(x) float(M_PI)*(x)/180.f
-
-static const char* vertexshader_source ="#version 410 core\n\
-        layout (location = 0) in vec3 position;\n\
-        layout (location = 1) in vec3 inormal;\n\
-        uniform mat4 model;\n\
-        uniform mat4 view;\n\
-        uniform mat4 projection;\n\
-        out vec3 normal;\n\
-        void main()\n\
-        {\n\
-            // Note that we read the multiplication from right to left\n\
-            gl_Position = projection * view * model * vec4(position, 1.0f);\n\
-            normal = inormal;\n\
-        }\n";
-
-static const char* fragmentshader_source ="#version 410 core\n\
-        in vec3 normal;\n\
-        out vec4 color;\n\
-        void main()\n\
-        {\n\
-            //color = vec4(vec3(clamp(dot(normalize(normal), vec3(0,0,1)), 0, 1)), 1.0);\n\
-            color = vec4(normalize(normal)*0.5+0.5, 1.0);\n\
-        }\n";
 
 SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _activecamera(0), _camera(nullptr) {
     _geometry.reset(new Geometry());
@@ -38,6 +14,9 @@ SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _ac
     _view = _camera->viewmatrix();
 
     _projection = glm::perspective(_camera->zoom(), float(_width) / _height, 0.1f, 100.0f);
+
+    _shaderMaps.insert(std::make_pair(GL_VERTEX_SHADER, Shader::buildVertexShader("3D/Shaders/Shaders/BaseVertexShader.vert")));
+    _shaderMaps.insert(std::make_pair(GL_FRAGMENT_SHADER, Shader::buildFragmentShader("3D/Shaders/Shaders/BaseFragmentShader.frag")));
 
     refreshScene();
 }
@@ -145,37 +124,37 @@ void SimpleScene::refreshScene()
     // Initialize shaders
     GLint success;
     GLchar infoLog[512]; // warning fixed size ... request for LOG_LENGTH!!!
-    GLuint vertexshader, fragmentshader;
 
-    // 1. Generate the shader
-    vertexshader = glCreateShader(GL_VERTEX_SHADER);
-    // 2. set the source
-    glShaderSource(vertexshader, 1, &vertexshader_source, NULL);
-    // 3. Compile
-    glCompileShader(vertexshader);
-    // 4. test for compile error
-    glGetShaderiv(vertexshader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexshader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
+    std::vector<GLuint> shaders;
 
-    fragmentshader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentshader, 1, &fragmentshader_source, NULL);
-    glCompileShader(fragmentshader);
-    glGetShaderiv(fragmentshader, GL_COMPILE_STATUS, &success);
-    if (!success)
+    for(auto it = _shaderMaps.begin(); it != _shaderMaps.end(); ++it)
     {
-        glGetShaderInfoLog(fragmentshader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        Shader loadedShader = it->second;
+        GLuint shader = glCreateShader(loadedShader.shaderType());
+
+        const char* source = loadedShader.shaderSource();
+        glShaderSource(shader, 1, &source, NULL);
+        glCompileShader(shader);
+
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(shader, 512, NULL, infoLog);
+            std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        }
+
+        shaders.push_back(shader);
     }
 
     // 1. Generate the program
     _program = glCreateProgram();
+
     // 2. Attach the shaders to the program
-    glAttachShader(_program, vertexshader);
-    glAttachShader(_program, fragmentshader);
+    for (GLuint shader : shaders)
+    {
+        glAttachShader(_program, shader);
+    }
+
     // 3. Link the program
     glLinkProgram(_program);
     // 4. Test for link errors
@@ -186,8 +165,10 @@ void SimpleScene::refreshScene()
         std::cerr << "ERROR::SHADER::LINK_FAILED\n" << infoLog << std::endl;
     }
 
-    glDeleteShader(vertexshader);
-    glDeleteShader(fragmentshader);
+    for (GLuint shader : shaders)
+    {
+         glDeleteShader(shader);
+    }
 }
 
 void SimpleScene::subdivideScene()

@@ -4,6 +4,7 @@
 #include <3D/openglbase.h>
 #include <3D/Camera/camera.h>
 #include <3D/Geometry/geometry.h>
+#include <3D/Shaders/shader.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,6 +13,8 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <map>
+#include <iostream>
 
 class SimpleScene : public OpenGLBase
 {
@@ -35,6 +38,9 @@ public:
 private:
     // A simple list of object geometries
     std::unique_ptr<Geometry> _geometry;
+
+    // Loaded shaders
+    std::map<GLenum, Shader> _shaderMaps;
 
     // OpenGL object for geometry
     GLuint _vao;
