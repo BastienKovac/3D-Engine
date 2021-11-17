@@ -35,12 +35,14 @@ public:
 
     void loadSceneFromFile(std::string fileName) override;
 
+    void loadShader(GLuint type, std::string path);
+
 private:
     // A simple list of object geometries
     std::unique_ptr<Geometry> _geometry;
 
     // Loaded shaders
-    std::map<GLenum, Shader> _shaderMaps;
+    std::map<GLenum, Shader*> _shaderMaps;
 
     // OpenGL object for geometry
     GLuint _vao;

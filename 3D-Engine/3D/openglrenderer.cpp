@@ -139,6 +139,13 @@ void OpenGLRenderer::loadSceneFromFile(std::string fileName)
     doneCurrent();
 }
 
+void OpenGLRenderer::loadShader(GLuint type, std::string path)
+{
+    makeCurrent();
+    _scene->loadShader(type, path);
+    doneCurrent();
+}
+
 void OpenGLRenderer::activateDemo(unsigned int numDemo) {
     if (numDemo < _demoConstructors.size()) {
         std::cout << "Activating demo " << numDemo << " : " << std::endl;

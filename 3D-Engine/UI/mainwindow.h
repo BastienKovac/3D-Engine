@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <iostream>
+#include <GL/gl.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,6 +23,10 @@ public:
 
 private slots:
     void on_loadFileButton_clicked();
+
+    void on_loadVertexShader_clicked();
+
+    void on_loadFragmentShader_clicked();
 
 private:
     Ui::MainWindow *ui;

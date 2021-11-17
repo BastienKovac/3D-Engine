@@ -12,8 +12,8 @@ class Shader
 
 public:
 
-    static Shader buildVertexShader(std::string shaderPath);
-    static Shader buildFragmentShader(std::string shaderPath);
+    static Shader* buildVertexShader(std::string shaderPath);
+    static Shader* buildFragmentShader(std::string shaderPath);
 
     const char *shaderSource() const;
     GLenum shaderType() const;

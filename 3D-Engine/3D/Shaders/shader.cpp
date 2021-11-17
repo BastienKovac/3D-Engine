@@ -1,14 +1,14 @@
 #include "shader.h"
 
 
-Shader Shader::buildVertexShader(std::string shaderPath)
+Shader* Shader::buildVertexShader(std::string shaderPath)
 {
-    return Shader(shaderPath, GL_VERTEX_SHADER);
+    return new Shader(shaderPath, GL_VERTEX_SHADER);
 }
 
-Shader Shader::buildFragmentShader(std::string shaderPath)
+Shader* Shader::buildFragmentShader(std::string shaderPath)
 {
-    return Shader(shaderPath, GL_FRAGMENT_SHADER);
+    return new Shader(shaderPath, GL_FRAGMENT_SHADER);
 }
 
 const char *Shader::shaderSource() const

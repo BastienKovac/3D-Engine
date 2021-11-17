@@ -63,6 +63,12 @@ void OpenGLBase::subdivideScene()
     exit(1);
 }
 
+void OpenGLBase::loadShader(GLuint type, std::string path)
+{
+    std::cerr << "Shader loading unimplemented" << std::endl;
+    exit(1);
+}
+
 void OpenGLBase::toggleDrawmode() {
     _drawFill = !_drawFill;
 }

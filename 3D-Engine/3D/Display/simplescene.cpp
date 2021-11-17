@@ -129,10 +129,10 @@ void SimpleScene::refreshScene()
 
     for(auto it = _shaderMaps.begin(); it != _shaderMaps.end(); ++it)
     {
-        Shader loadedShader = it->second;
-        GLuint shader = glCreateShader(loadedShader.shaderType());
+        Shader* loadedShader = it->second;
+        GLuint shader = glCreateShader(loadedShader->shaderType());
 
-        const char* source = loadedShader.shaderSource();
+        const char* source = loadedShader->shaderSource();
         glShaderSource(shader, 1, &source, NULL);
         glCompileShader(shader);
 
@@ -181,4 +181,23 @@ void SimpleScene::loadSceneFromFile(std::string fileName)
 {
     _geometry->setScene(fileName);
     refreshScene();
+}
+
+void SimpleScene::loadShader(GLuint type, std::string path)
+{
+    switch (type)
+    {
+    case GL_VERTEX_SHADER:
+        _shaderMaps.erase(type);
+        _shaderMaps.insert(std::make_pair(type, Shader::buildVertexShader(path)));
+        refreshScene();
+        break;
+    case GL_FRAGMENT_SHADER:
+        _shaderMaps.erase(type);
+        _shaderMaps.insert(std::make_pair(type, Shader::buildFragmentShader(path)));
+        refreshScene();
+        break;
+    default:
+        break;
+    }
 }

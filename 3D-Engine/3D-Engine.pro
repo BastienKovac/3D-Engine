@@ -328,3 +328,6 @@ else:win32-g++:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/OpenMesh/lib-w
 # Includes
 INCLUDEPATH += $$PWD/libs/OpenMesh/include
 DEPENDPATH += $$PWD/libs/OpenMesh/include
+
+DISTFILES += \
+    3D/Shaders/Shaders/UniformColorShader.frag
