@@ -298,13 +298,14 @@ HEADERS += \
     utils.h \
     3D/Geometry/geometry.h \
     3D/Display/simplescene.h \
-    3D/Shaders/shader.h
+    3D/Shaders/shader.h \
+    3D/stb_image.h \
 
 FORMS += \
     UI/mainwindow.ui
 
 OTHER_FILES += \
-    3D/Shaders/Shaders/*
+    Resources/Shaders/*
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

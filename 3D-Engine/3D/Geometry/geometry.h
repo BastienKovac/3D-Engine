@@ -35,6 +35,9 @@ public:
 
     void subdivide();
 
+    unsigned int textureId() const;
+    void setTextureId(unsigned int textureId);
+
 private:
     // OpenMesh geometry
     Mesh _mesh;
@@ -42,6 +45,8 @@ private:
 
     // Geometry cache
     bool _dirty = true;
+
+    unsigned int _textureId;
 
     std::vector<GLfloat> _vertices;
     std::vector<GLfloat> _normals;

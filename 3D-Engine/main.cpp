@@ -1,3 +1,10 @@
+#ifndef STB_IMAGE_IMPLEMENTATION
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "3D/stb_image.h"
+
+#endif
+
 #include "UI/mainwindow.h"
 
 #include <QApplication>

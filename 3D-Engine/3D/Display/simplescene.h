@@ -5,6 +5,7 @@
 #include <3D/Camera/camera.h>
 #include <3D/Geometry/geometry.h>
 #include <3D/Shaders/shader.h>
+#include <3D/stb_image.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -48,6 +49,7 @@ private:
     GLuint _vao;
     GLuint _vbo;
     GLuint _nbo;
+#include <3D/stb_image.h>
     GLuint _ebo;
 
     // Shader program for rendering
@@ -71,6 +73,8 @@ private:
     glm::mat4 _projection;
 
     void clearOpenGLContext();
+
+    unsigned int loadTexture(const char* path);
 };
 
 #endif // OPENGLGEOMETRY_H

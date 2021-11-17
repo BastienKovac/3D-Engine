@@ -12,12 +12,14 @@ Geometry::~Geometry()
 
 void Geometry::setScene(std::string fileName)
 {
-    if (!OpenMesh::IO::read_mesh(_mesh, fileName))
+    OpenMesh::IO::Options readOptions;
+    readOptions += OpenMesh::IO::Options::VertexTexCoord;
+
+    if (!OpenMesh::IO::read_mesh(_mesh, fileName, readOptions))
     {
       std::cerr << "Couldn't read file " << fileName << std::endl;
       exit(1);
     }
-
     _dirty = true;
 }
 
@@ -143,6 +145,16 @@ void Geometry::subdivide()
     assert(OpenMesh::Utils::MeshCheckerT<Mesh>(_mesh).check());
 
     _dirty = true;
+}
+
+unsigned int Geometry::textureId() const
+{
+    return _textureId;
+}
+
+void Geometry::setTextureId(unsigned int textureId)
+{
+    _textureId = textureId;
 }
 
 void Geometry::updateExistingVertex(const Mesh::VertexHandle &v_h)
@@ -338,3 +350,5 @@ void Geometry::cutCorner(const Mesh::HalfedgeHandle &h_e)
 
     _mesh.set_halfedge_handle(newFace, halfEdgeOne);
 }
+
+

@@ -15,8 +15,8 @@ SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _ac
 
     _projection = glm::perspective(_camera->zoom(), float(_width) / _height, 0.1f, 100.0f);
 
-    _shaderMaps.insert(std::make_pair(GL_VERTEX_SHADER, Shader::buildVertexShader("3D/Shaders/Shaders/BaseVertexShader.vert")));
-    _shaderMaps.insert(std::make_pair(GL_FRAGMENT_SHADER, Shader::buildFragmentShader("3D/Shaders/Shaders/BaseFragmentShader.frag")));
+    _shaderMaps.insert(std::make_pair(GL_VERTEX_SHADER, Shader::buildVertexShader("Resources/Shaders/BaseVertexShader.vert")));
+    _shaderMaps.insert(std::make_pair(GL_FRAGMENT_SHADER, Shader::buildFragmentShader("Resources/Shaders/BaseFragmentShader.frag")));
 
     refreshScene();
 }
@@ -50,6 +50,11 @@ void SimpleScene::draw() {
     glUniformMatrix4fv(glGetUniformLocation(_program, "model"), 1, GL_FALSE, glm::value_ptr(_model));
     glUniformMatrix4fv(glGetUniformLocation(_program, "view"), 1, GL_FALSE, glm::value_ptr(_view));
     glUniformMatrix4fv(glGetUniformLocation(_program, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
+
+    // Activate texture
+    glUniform1i(glGetUniformLocation(_program, "diffuse"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE0, _geometry->textureId());
 
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _geometry.get()->indices().size(), GL_UNSIGNED_INT, 0);
@@ -180,6 +185,8 @@ void SimpleScene::subdivideScene()
 void SimpleScene::loadSceneFromFile(std::string fileName)
 {
     _geometry->setScene(fileName);
+    _geometry->setTextureId(loadTexture("/home/kvb1372a/Workspaces/3D-Engine/3D-Engine/Resources/Shapes/Skull/first_lady.png"));
+
     refreshScene();
 }
 
@@ -200,4 +207,41 @@ void SimpleScene::loadShader(GLuint type, std::string path)
     default:
         break;
     }
+}
+
+unsigned int SimpleScene::loadTexture(char const* path)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
 }
