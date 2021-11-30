@@ -24,7 +24,6 @@ DEFINES += OM_STATIC_BUILD
 
 SOURCES += \
     3D/Camera/camera.cpp \
-    3D/openglbase.cpp \
     glm/detail/glm.cpp \
     main.cpp \
     UI/mainwindow.cpp \
@@ -35,7 +34,6 @@ SOURCES += \
 
 HEADERS += \
     3D/Camera/camera.h \
-    3D/openglbase.h \
     UI/mainwindow.h \
     3D/openglrenderer.h \
     glm/common.hpp \

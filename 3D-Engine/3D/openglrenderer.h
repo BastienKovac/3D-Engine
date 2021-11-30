@@ -14,7 +14,6 @@
 #include <QVector3D>
 
 #include <3D/Camera/camera.h>
-#include <3D/openglbase.h>
 #include <3D/Display/simplescene.h>
 
 class OpenGLRenderer : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
@@ -24,9 +23,10 @@ class OpenGLRenderer : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core
 public:
     OpenGLRenderer(QWidget *parent = nullptr, int fps = 60);
 
-    void activateDemo(unsigned int numDemo);
     void loadSceneFromFile(std::string fileName);
     void loadSkybox(std::string path);
+
+    long getNumberOfTriangles();
 
 protected:
     virtual void initializeGL() override;
@@ -43,11 +43,7 @@ public slots:
 
 private:
     // What's being drawn
-    std::unique_ptr<OpenGLBase> _scene;
-
-    // Stored demos
-    using DemoConstructors=std::function<OpenGLBase*(int, int)>;
-    std::vector<DemoConstructors> _demoConstructors;
+    std::unique_ptr<SimpleScene> _scene;
 
     QTimer *t_Timer;
 

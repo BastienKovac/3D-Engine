@@ -1,7 +1,6 @@
 #include "openglrenderer.h"
 
 #include <iostream>
-#include <3D/openglbase.h>
 
 OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps) : QOpenGLWidget(parent)
 {
@@ -16,10 +15,6 @@ OpenGLRenderer::OpenGLRenderer(QWidget *parent, int fps) : QOpenGLWidget(parent)
         connect(t_Timer, SIGNAL(timeout()), this, SLOT(updateGL()));
         t_Timer->start(timerInterval);
     }
-
-    _demoConstructors.push_back( [](int width, int height)->OpenGLBase*{
-        return new SimpleScene(width, height);
-    });
 }
 
 void OpenGLRenderer::cleanup() {
@@ -36,7 +31,7 @@ void OpenGLRenderer::initializeGL()
         exit(1);
     }
 
-    _scene.reset(_demoConstructors[0](width(), height()));
+    _scene.reset(new SimpleScene(width(), height()));
 }
 
 void OpenGLRenderer::paintGL()
@@ -54,19 +49,6 @@ void OpenGLRenderer::keyPressEvent(QKeyEvent *keyEvent)
 {
     switch (keyEvent->key())
     {
-    case Qt::Key_0:
-    case Qt::Key_1:
-    case Qt::Key_2:
-    case Qt::Key_3:
-    case Qt::Key_4:
-    case Qt::Key_5:
-    case Qt::Key_6:
-    case Qt::Key_7:
-    case Qt::Key_8:
-    case Qt::Key_9:
-        // Demo keys
-        activateDemo(keyEvent->key() - Qt::Key_0);
-        break;
     case Qt::Key_Left:
     case Qt::Key_Up:
     case Qt::Key_Right:
@@ -146,14 +128,9 @@ void OpenGLRenderer::loadSkybox(std::string path)
     doneCurrent();
 }
 
-void OpenGLRenderer::activateDemo(unsigned int numDemo) {
-    if (numDemo < _demoConstructors.size()) {
-        std::cout << "Activating demo " << numDemo << " : " << std::endl;
-        makeCurrent();
-        _scene.reset(_demoConstructors[numDemo](width(), height()));
-        doneCurrent();
-        update();
-    }
+long OpenGLRenderer::getNumberOfTriangles()
+{
+
 }
 
 

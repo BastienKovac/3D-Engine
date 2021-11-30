@@ -26,6 +26,8 @@ private slots:
 
     void on_loadSkyBoxButton_clicked();
 
+    void on_simplifyButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 

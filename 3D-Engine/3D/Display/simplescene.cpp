@@ -2,7 +2,12 @@
 
 #define deg2rad(x) float(M_PI)*(x)/180.f
 
-SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _activecamera(0), _camera(nullptr) {
+SimpleScene::SimpleScene(int width, int height)
+{
+    initializeOpenGLFunctions();
+    glEnable(GL_DEPTH_TEST);
+    glViewport(0, 0, width, height);
+
     _geometry.reset(new Geometry());
 
     _cameraselector.push_back([]()->Camera*{return new EulerCamera(glm::vec3(0.f, 0.f, 1.f));} );
@@ -21,6 +26,11 @@ SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _ac
     refreshScene();
 }
 
+void SimpleScene::toggleDrawmode()
+{
+    _drawFill = !_drawFill;
+}
+
 void SimpleScene::clearOpenGLContext()
 {
     glDeleteBuffers(1, &_vbo);
@@ -35,8 +45,16 @@ SimpleScene::~SimpleScene() {
     clearOpenGLContext();
 }
 
+long SimpleScene::getNumberOfTriangles()
+{
+
+}
+
 void SimpleScene::resize(int width, int height){
-    OpenGLBase::resize(width, height);
+    _width = width;
+    _height = height;
+     glViewport(0, 0, _width, _height);
+
     _camera->setviewport(glm::vec4(0.f, 0.f, _width, _height));
     _projection = glm::perspective(_camera->zoom(), float(_width) / _height, 0.1f, 100.0f);
 }
@@ -117,7 +135,18 @@ void SimpleScene::renderGeometry()
 }
 
 void SimpleScene::draw() {
-    OpenGLBase::draw();
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    if (_drawFill)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    else
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
     _view = _camera->viewmatrix();
 
     if (_hasSkybox)

@@ -39,3 +39,9 @@ void MainWindow::on_loadSkyBoxButton_clicked()
     }
 }
 
+
+void MainWindow::on_simplifyButton_clicked()
+{
+
+}
+

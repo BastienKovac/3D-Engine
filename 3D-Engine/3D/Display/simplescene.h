@@ -1,11 +1,12 @@
 #ifndef OPENGLGEOMETRY_H
 #define OPENGLGEOMETRY_H
 
-#include <3D/openglbase.h>
 #include <3D/Camera/camera.h>
 #include <3D/Geometry/geometry.h>
 #include <3D/Shaders/shader.h>
 #include <3D/stb_image.h>
+
+#include <QOpenGLFunctions_4_1_Core>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -19,36 +20,42 @@
 #include <filesystem>
 #include <algorithm>
 
-class SimpleScene : public OpenGLBase
+class SimpleScene : public QOpenGLFunctions_4_1_Core
 {
 public:
     explicit SimpleScene(int width, int height);
     ~SimpleScene() override;
 
-    void resize(int width, int height) override;
-    void draw() override;
+    long getNumberOfTriangles();
 
-    void mouseclick(int button, float xpos, float ypos) override;
-    void mousemove(float xpos, float ypos) override;
-    void keyboardmove(int key, double time) override;
-    bool keyboard(unsigned char k) override;
+    void resize(int width, int height);
+    void draw();
+
+    void mouseclick(int button, float xpos, float ypos);
+    void mousemove(float xpos, float ypos);
+    void keyboardmove(int key, double time);
+    bool keyboard(unsigned char k);
+
+    void toggleDrawmode();
 
     void refreshScene();
-    void subdivideScene() override;
 
-    void loadSceneFromFile(std::string fileName) override;
+    void subdivideScene();
 
-    void loadSkybox(std::string path) override;
+    void loadSceneFromFile(std::string fileName);
+    void loadSkybox(std::string path);
 
-    void renderSkyBox();
-
-    void renderGeometry();
-
-    void initSkyBoxBuffers();
-    
-    void initGeometryBuffers();
     
 private:
+
+    void renderSkyBox();
+    void renderGeometry();
+    void initSkyBoxBuffers();
+    void initGeometryBuffers();
+
+    int _width, _height;
+    bool _drawFill;
+
     // A simple list of object geometries
     std::unique_ptr<Geometry> _geometry;
 
@@ -75,7 +82,7 @@ private:
     // Camera
     using CameraSelector = std::function<Camera*()>;
     std::vector<CameraSelector> _cameraselector;
-    unsigned int _activecamera;
+    unsigned int _activecamera = 0;
 
     std::unique_ptr<Camera> _camera;
 
