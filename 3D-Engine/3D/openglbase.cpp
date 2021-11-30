@@ -18,7 +18,7 @@ void OpenGLBase::resize(int width, int height) {
 }
 
 void OpenGLBase::draw() {
-    glClearColor(0.f, 0.f, 0.f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     if (_drawFill)
@@ -63,9 +63,9 @@ void OpenGLBase::subdivideScene()
     exit(1);
 }
 
-void OpenGLBase::loadShader(GLuint type, std::string path)
+void OpenGLBase::loadSkybox(std::string path)
 {
-    std::cerr << "Shader loading unimplemented" << std::endl;
+    std::cerr << "Skybox loading unimplemented" << std::endl;
     exit(1);
 }
 

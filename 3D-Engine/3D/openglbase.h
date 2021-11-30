@@ -26,7 +26,7 @@ public:
     virtual void loadSceneFromFile(std::string fileName);
     virtual void subdivideScene();
 
-    virtual void loadShader(GLuint type, std::string path);
+    virtual void loadSkybox(std::string path);
 
     void toggleDrawmode();
 

@@ -32,11 +32,15 @@ public:
     virtual std::vector<GLfloat> vertices();
     virtual std::vector<GLfloat> normals();
     virtual std::vector<GLuint> indices();
+    virtual std::vector<GLfloat> texCoords();
 
     void subdivide();
 
     unsigned int textureId() const;
     void setTextureId(unsigned int textureId);
+
+    bool hasTexture();
+
 
 private:
     // OpenMesh geometry
@@ -51,6 +55,7 @@ private:
     std::vector<GLfloat> _vertices;
     std::vector<GLfloat> _normals;
     std::vector<GLuint> _indices;
+    std::vector<GLfloat> _texCoords;
 
     void updateExistingVertex(const Mesh::VertexHandle& v_h);
     void addMidPoint(const Mesh::EdgeHandle& e_h);

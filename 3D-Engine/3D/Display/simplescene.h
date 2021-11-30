@@ -16,6 +16,8 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <filesystem>
+#include <algorithm>
 
 class SimpleScene : public OpenGLBase
 {
@@ -32,28 +34,38 @@ public:
     bool keyboard(unsigned char k) override;
 
     void refreshScene();
-    void subdivideScene();
+    void subdivideScene() override;
 
     void loadSceneFromFile(std::string fileName) override;
 
-    void loadShader(GLuint type, std::string path);
+    void loadSkybox(std::string path) override;
 
+    void renderSkyBox();
+
+    void renderGeometry();
+
+    void initSkyBoxBuffers();
+    
+    void initGeometryBuffers();
+    
 private:
     // A simple list of object geometries
     std::unique_ptr<Geometry> _geometry;
 
     // Loaded shaders
-    std::map<GLenum, Shader*> _shaderMaps;
+    void loadShader(std::string name, std::string vertexPath, std::string fragmentPath);
+    void useShader(std::string name);
+    std::map<std::string, Shader*> _shaderMaps;
+
+    std::string _currentShader;
+
+    unsigned int _programID;
 
     // OpenGL object for geometry
     GLuint _vao;
     GLuint _vbo;
     GLuint _nbo;
-#include <3D/stb_image.h>
     GLuint _ebo;
-
-    // Shader program for rendering
-    GLuint _program;
 
     // for mouse management
     int _button; // 0 --> left. 1 --> right. 2 --> middle. 3 --> other
@@ -71,6 +83,57 @@ private:
     glm::mat4 _model;
     glm::mat4 _view;
     glm::mat4 _projection;
+
+    // Skybox
+    bool _hasSkybox = false;
+    unsigned int _skyboxID;
+    GLuint _skyboxVAO, _skyboxVBO;
+
+    // Skybox positions are absolute
+    float _skyboxVertices[36 * 3] = {
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+;
 
     void clearOpenGLContext();
 

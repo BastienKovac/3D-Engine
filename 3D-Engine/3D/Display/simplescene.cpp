@@ -15,19 +15,20 @@ SimpleScene::SimpleScene(int width, int height) : OpenGLBase(width, height), _ac
 
     _projection = glm::perspective(_camera->zoom(), float(_width) / _height, 0.1f, 100.0f);
 
-    _shaderMaps.insert(std::make_pair(GL_VERTEX_SHADER, Shader::buildVertexShader("Resources/Shaders/BaseVertexShader.vert")));
-    _shaderMaps.insert(std::make_pair(GL_FRAGMENT_SHADER, Shader::buildFragmentShader("Resources/Shaders/BaseFragmentShader.frag")));
+    loadShader("base", "../3D-Engine/Resources/Shaders/BaseVertexShader.vert", "../3D-Engine/Resources/Shaders/BaseFragmentShader.frag");
+    loadShader("skybox", "../3D-Engine/Resources/Shaders/SkyboxVertexShader.vert", "../3D-Engine/Resources/Shaders/SkyboxFragmentShader.frag");
 
     refreshScene();
 }
 
 void SimpleScene::clearOpenGLContext()
 {
-    glDeleteProgram(_program);
     glDeleteBuffers(1, &_vbo);
     glDeleteBuffers(1, &_nbo);
     glDeleteBuffers(1, &_ebo);
+    glDeleteBuffers(1, &_skyboxVBO);
     glDeleteVertexArrays(1, &_vao) ;
+    glDeleteVertexArrays(1, &_skyboxVAO);
 }
 
 SimpleScene::~SimpleScene() {
@@ -40,25 +41,92 @@ void SimpleScene::resize(int width, int height){
     _projection = glm::perspective(_camera->zoom(), float(_width) / _height, 0.1f, 100.0f);
 }
 
-void SimpleScene::draw() {
-    OpenGLBase::draw();
+void SimpleScene::initSkyBoxBuffers()
+{
+    glGenVertexArrays(1, &_skyboxVAO);
+    glGenBuffers(1, &_skyboxVBO);
 
-    glUseProgram(_program);
+    glBindVertexArray(_skyboxVAO);
 
-    _view = _camera->viewmatrix();
+    glBindBuffer(GL_ARRAY_BUFFER, _skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(_skyboxVertices), &_skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
 
-    glUniformMatrix4fv(glGetUniformLocation(_program, "model"), 1, GL_FALSE, glm::value_ptr(_model));
-    glUniformMatrix4fv(glGetUniformLocation(_program, "view"), 1, GL_FALSE, glm::value_ptr(_view));
-    glUniformMatrix4fv(glGetUniformLocation(_program, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
+    useShader("skybox");
+    glUniform1d(glGetUniformLocation(_programID, "skybox"), 0);
+}
 
-    // Activate texture
-    glUniform1i(glGetUniformLocation(_program, "diffuse"), 0);
+void SimpleScene::renderSkyBox()
+{
+    glDepthMask(GL_FALSE);
+    useShader("skybox");
+
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
+    // Remove translation from view matrix
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "view"), 1, GL_FALSE, glm::value_ptr(glm::mat4(glm::mat3(_view))));
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
+
+    glBindVertexArray(_skyboxVAO);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE0, _geometry->textureId());
+    glBindTexture(GL_TEXTURE_CUBE_MAP, _skyboxID);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    glDepthMask(GL_TRUE);
+}
+
+void SimpleScene::initGeometryBuffers()
+{
+    glGenBuffers(1, &_vbo);
+    glGenBuffers(1, &_nbo);
+    glGenBuffers(1, &_ebo);
+    glGenVertexArrays(1, &_vao);
+
+    glBindVertexArray(_vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, _geometry.get()->vertices().size() * sizeof (GLfloat), _geometry.get()->vertices().data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, _nbo);
+    glBufferData(GL_ARRAY_BUFFER, _geometry.get()->normals().size() * sizeof (GLfloat), _geometry.get()->normals().data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _geometry.get()->indices().size() * sizeof (GLfloat), _geometry.get()->indices().data(), GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+}
+
+void SimpleScene::renderGeometry()
+{
+    useShader("base");
+
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "view"), 1, GL_FALSE, glm::value_ptr(_view));
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
 
     glBindVertexArray(_vao);
     glDrawElements(GL_TRIANGLES, _geometry.get()->indices().size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+void SimpleScene::draw() {
+    OpenGLBase::draw();
+    _view = _camera->viewmatrix();
+
+    if (_hasSkybox)
+    {
+        renderSkyBox();
+    }
+
+    renderGeometry();
+
 }
 
 void SimpleScene::mouseclick(int button, float xpos, float ypos) {
@@ -93,86 +161,10 @@ void SimpleScene::refreshScene()
 {
     clearOpenGLContext();
 
-    // Initialize the geometry
-    // 1. Generate geometry buffers
-    glGenBuffers(1, &_vbo) ;
-    glGenBuffers(1, &_nbo) ;
-    glGenBuffers(1, &_ebo) ;
-    glGenVertexArrays(1, &_vao) ;
-
-    // 2. Bind Vertex Array Object
-    glBindVertexArray(_vao);
-
-    // 3. Copy our vertices array in a buffer for OpenGL to use
-    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBufferData(GL_ARRAY_BUFFER, _geometry.get()->vertices().size() * sizeof (GLfloat), _geometry.get()->vertices().data(), GL_STATIC_DRAW);
-
-    // 4. Then set our vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-
-    // 5. Copy our normals array in a buffer for OpenGL to use
-    glBindBuffer(GL_ARRAY_BUFFER, _nbo);
-    glBufferData(GL_ARRAY_BUFFER, _geometry.get()->normals().size() * sizeof (GLfloat), _geometry.get()->normals().data(), GL_STATIC_DRAW);
-
-    // 6. Copy our vertices array in a buffer for OpenGL to use
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(1);
-
-    // 7. Copy our index array in a element buffer for OpenGL to use
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, _geometry.get()->indices().size() * sizeof (GLfloat), _geometry.get()->indices().data(), GL_STATIC_DRAW);
-
-    //6. Unbind the VAO
-    glBindVertexArray(0);
-
-    // Initialize shaders
-    GLint success;
-    GLchar infoLog[512]; // warning fixed size ... request for LOG_LENGTH!!!
-
-    std::vector<GLuint> shaders;
-
-    for(auto it = _shaderMaps.begin(); it != _shaderMaps.end(); ++it)
+    initGeometryBuffers();
+    if (_hasSkybox)
     {
-        Shader* loadedShader = it->second;
-        GLuint shader = glCreateShader(loadedShader->shaderType());
-
-        const char* source = loadedShader->shaderSource();
-        glShaderSource(shader, 1, &source, NULL);
-        glCompileShader(shader);
-
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            glGetShaderInfoLog(shader, 512, NULL, infoLog);
-            std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-        }
-
-        shaders.push_back(shader);
-    }
-
-    // 1. Generate the program
-    _program = glCreateProgram();
-
-    // 2. Attach the shaders to the program
-    for (GLuint shader : shaders)
-    {
-        glAttachShader(_program, shader);
-    }
-
-    // 3. Link the program
-    glLinkProgram(_program);
-    // 4. Test for link errors
-    glGetProgramiv(_program, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(_program, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::LINK_FAILED\n" << infoLog << std::endl;
-    }
-
-    for (GLuint shader : shaders)
-    {
-         glDeleteShader(shader);
+        initSkyBoxBuffers();
     }
 }
 
@@ -185,27 +177,138 @@ void SimpleScene::subdivideScene()
 void SimpleScene::loadSceneFromFile(std::string fileName)
 {
     _geometry->setScene(fileName);
-    _geometry->setTextureId(loadTexture("/home/kvb1372a/Workspaces/3D-Engine/3D-Engine/Resources/Shapes/Skull/first_lady.png"));
-
     refreshScene();
 }
 
-void SimpleScene::loadShader(GLuint type, std::string path)
+void SimpleScene::loadShader(std::string name, std::string vertexPath, std::string fragmentPath)
 {
-    switch (type)
+    _shaderMaps.erase(name);
+
+    Shader* shader = new Shader(vertexPath, fragmentPath);
+
+    _shaderMaps.insert(std::make_pair(name, shader));
+    refreshScene();
+}
+
+void SimpleScene::useShader(std::string name)
+{
+    if (name == _currentShader)
     {
-    case GL_VERTEX_SHADER:
-        _shaderMaps.erase(type);
-        _shaderMaps.insert(std::make_pair(type, Shader::buildVertexShader(path)));
+        // Correct shader is already loaded, return
+        return;
+    }
+
+    _currentShader = name;
+
+    Shader* shader = _shaderMaps[name];
+
+    auto path = std::filesystem::path(shader->vertexPath());
+    std::ifstream v_in(path);
+    std::string v_contents((std::istreambuf_iterator<char>(v_in)), std::istreambuf_iterator<char>());
+
+    GLint success;
+    GLchar infoLog[512]; // warning fixed size ... request for LOG_LENGTH!!!
+
+    GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
+    const char* v_source = v_contents.c_str();
+    glShaderSource(vertex, 1, &v_source, NULL);
+    glCompileShader(vertex);
+
+    glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    path = std::filesystem::path(shader->fragmentPath());
+    std::ifstream f_in(path);
+    std::string f_contents((std::istreambuf_iterator<char>(f_in)), std::istreambuf_iterator<char>());
+
+    GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    const char* f_source = f_contents.c_str();
+    glShaderSource(fragment, 1, &f_source, NULL);
+    glCompileShader(fragment);
+
+    glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragment, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    // shader Program
+    _programID = glCreateProgram();
+    glAttachShader(_programID, vertex);
+    glAttachShader(_programID, fragment);
+    glLinkProgram(_programID);
+
+    glGetProgramiv(_programID, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(_programID, 512, NULL, infoLog);
+        std::cerr << "ERROR::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
+    }
+
+    glDeleteShader(vertex);
+    glDeleteShader(fragment);
+
+    glUseProgram(_programID);
+}
+
+void SimpleScene::loadSkybox(std::string path)
+{
+    std::vector<std::string> expectedFileNamesInOrder = {"right", "left", "top", "bottom", "front", "back"};
+    std::map<std::string, std::filesystem::path> files;
+
+    for (const auto & entry : std::filesystem::directory_iterator(path))
+    {
+        if (std::find(expectedFileNamesInOrder.begin(), expectedFileNamesInOrder.end(), entry.path().stem()) != expectedFileNamesInOrder.end())
+        {
+            files[entry.path().stem()] = entry.path();
+        }
+    }
+
+    if (expectedFileNamesInOrder.size() == files.size())
+    {
+        int i = 0;
+        unsigned int textureID;
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+        int width, height, nrChannels;
+        for (std::string key : expectedFileNamesInOrder)
+        {
+            unsigned char *data = stbi_load(files[key].c_str(), &width, &height, &nrChannels, 0);
+            if (data)
+            {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+                stbi_image_free(data);
+
+                ++i;
+            }
+            else
+            {
+                std::cerr << "Cubemap tex failed to load at path: " << path << std::endl;
+                stbi_image_free(data);
+
+                return;
+            }
+        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        _hasSkybox = true;
+        _skyboxID = textureID;
+
         refreshScene();
-        break;
-    case GL_FRAGMENT_SHADER:
-        _shaderMaps.erase(type);
-        _shaderMaps.insert(std::make_pair(type, Shader::buildFragmentShader(path)));
-        refreshScene();
-        break;
-    default:
-        break;
+    }
+    else
+    {
+        std::cerr << "Missing skybox files" << std::endl;
     }
 }
 
@@ -220,11 +323,19 @@ unsigned int SimpleScene::loadTexture(char const* path)
     {
         GLenum format;
         if (nrComponents == 1)
+        {
+
             format = GL_RED;
+        }
         else if (nrComponents == 3)
+        {
+
             format = GL_RGB;
+        }
         else if (nrComponents == 4)
+        {
             format = GL_RGBA;
+        }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);

@@ -14,6 +14,7 @@ void Geometry::setScene(std::string fileName)
 {
     OpenMesh::IO::Options readOptions;
     readOptions += OpenMesh::IO::Options::VertexTexCoord;
+    readOptions += OpenMesh::IO::Options::VertexNormal;
 
     if (!OpenMesh::IO::read_mesh(_mesh, fileName, readOptions))
     {
@@ -28,6 +29,7 @@ void Geometry::refreshGeometryCache()
     _vertices.clear();
     _indices.clear();
     _normals.clear();
+    _texCoords.clear();
 
     // Start index on 1
     int v_index = 0;
@@ -35,13 +37,16 @@ void Geometry::refreshGeometryCache()
     auto indexProperty = OpenMesh::makeTemporaryProperty<OpenMesh::VertexHandle, int>(_mesh, "v_index");
 
     // Refresh normals
-    _mesh.request_vertex_normals();
-    // we need face normals to update the vertex normals
-    _mesh.request_face_normals();
-    // let the mesh update the normals
-    _mesh.update_normals();
-    // dispose the face normals, as we don't need them anymore
-    _mesh.release_face_normals();
+    if (!_mesh.has_vertex_normals())
+    {
+        _mesh.request_vertex_normals();
+        // we need face normals to update the vertex normals
+        _mesh.request_face_normals();
+        // let the mesh update the normals
+        _mesh.update_normals();
+        // dispose the face normals, as we don't need them anymore
+        _mesh.release_face_normals();
+    }
 
     for (const auto& vh : _mesh.vertices())
     {
@@ -60,6 +65,15 @@ void Geometry::refreshGeometryCache()
         _normals.push_back(normal[0]);
         _normals.push_back(normal[1]);
         _normals.push_back(normal[2]);
+
+        // Fill texCoords cache
+        if (_mesh.has_vertex_texcoords2D())
+        {
+            auto texCoord = _mesh.texcoord2D(vh);
+
+            _texCoords.push_back(texCoord[0]);
+            _texCoords.push_back(texCoord[1]);
+        }
     }
 
     for (Mesh::FaceIter f_it = _mesh.faces_begin() ; f_it != _mesh.faces_end() ; ++f_it)
@@ -102,6 +116,15 @@ std::vector<GLuint> Geometry::indices()
         refreshGeometryCache();
     }
     return _indices;
+}
+
+std::vector<GLfloat> Geometry::texCoords()
+{
+    if (_dirty)
+    {
+        refreshGeometryCache();
+    }
+    return _texCoords;
 }
 
 void Geometry::subdivide()
@@ -155,6 +178,11 @@ unsigned int Geometry::textureId() const
 void Geometry::setTextureId(unsigned int textureId)
 {
     _textureId = textureId;
+}
+
+bool Geometry::hasTexture()
+{
+    return _mesh.has_vertex_texcoords2D();
 }
 
 void Geometry::updateExistingVertex(const Mesh::VertexHandle &v_h)

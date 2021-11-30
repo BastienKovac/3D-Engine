@@ -1,31 +1,17 @@
 #include "shader.h"
 
-
-Shader* Shader::buildVertexShader(std::string shaderPath)
+const std::string &Shader::vertexPath() const
 {
-    return new Shader(shaderPath, GL_VERTEX_SHADER);
+    return _vertexPath;
 }
 
-Shader* Shader::buildFragmentShader(std::string shaderPath)
+const std::string &Shader::fragmentPath() const
 {
-    return new Shader(shaderPath, GL_FRAGMENT_SHADER);
+    return _fragmentPath;
 }
 
-const char *Shader::shaderSource() const
+Shader::Shader(std::string vertexShaderPath, std::string fragmentShaderPath)
 {
-    return _shaderSource.c_str();
-}
-
-GLenum Shader::shaderType() const
-{
-    return _shaderType;
-}
-
-Shader::Shader(std::string shaderPath, GLenum shaderType)
-{
-    std::ifstream in(shaderPath);
-    std::string contents((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-
-    _shaderSource = contents;
-    _shaderType = shaderType;
+    _vertexPath = vertexShaderPath;
+    _fragmentPath = fragmentShaderPath;
 }

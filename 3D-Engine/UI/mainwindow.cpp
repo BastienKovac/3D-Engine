@@ -1,8 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     QSurfaceFormat format;
     format.setVersion(4, 1);
@@ -14,9 +13,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->renderer->resize(ui->renderer->sizeHint());
     ui->renderer->setFocus();
-
-    ui->vertexShaderPath->setText("BaseVertexShader.vert");
-    ui->fragmentShaderPath->setText("BaseFragmentShader.frag");
 }
 
 MainWindow::~MainWindow()
@@ -27,33 +23,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_loadFileButton_clicked()
 {
-    auto filePath = QFileDialog::getOpenFileName(this, tr("Open OBJ File"), "~", tr("OBJ Files (*.obj)"));
+    auto filePath = QFileDialog::getOpenFileName(this, tr("Open OBJ File"), "../3D-Engine/Resources/Shapes", tr("OBJ Files (*.obj)"));
     if (filePath != nullptr)
     {
         ui->renderer->loadSceneFromFile(filePath.toStdString());
     }
 }
 
-void MainWindow::on_loadVertexShader_clicked()
+void MainWindow::on_loadSkyBoxButton_clicked()
 {
-    auto filePath = QFileDialog::getOpenFileName(this, tr("Get vertex shader file"), "~", tr("Vertex Shader (*.vert)"));
+    auto filePath = QFileDialog::getExistingDirectory(this, tr("Open Skybox directory"), "../3D-Engine/Resources/Skyboxes");
     if (filePath != nullptr)
     {
-        std::string pathStr = filePath.toStdString();
-        ui->renderer->loadShader(GL_VERTEX_SHADER, pathStr);
-
-        ui->vertexShaderPath->setText(QString::fromStdString(pathStr.substr(pathStr.find_last_of("/") + 1)));
+        ui->renderer->loadSkybox(filePath.toStdString());
     }
 }
 
-void MainWindow::on_loadFragmentShader_clicked()
-{
-    auto filePath = QFileDialog::getOpenFileName(this, tr("Get fragment shader file"), "~", tr("Fragment Shader (*.frag)"));
-    if (filePath != nullptr)
-    {
-        std::string pathStr = filePath.toStdString();
-        ui->renderer->loadShader(GL_FRAGMENT_SHADER, pathStr);
-
-        ui->fragmentShaderPath->setText(QString::fromStdString(pathStr.substr(pathStr.find_last_of("/") + 1)));
-    }
-}

@@ -26,7 +26,7 @@ public:
 
     void activateDemo(unsigned int numDemo);
     void loadSceneFromFile(std::string fileName);
-    void loadShader(GLuint type, std::string path);
+    void loadSkybox(std::string path);
 
 protected:
     virtual void initializeGL() override;

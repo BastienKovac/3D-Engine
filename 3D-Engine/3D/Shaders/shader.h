@@ -4,6 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <filesystem>
+
+#include <QOpenGLFunctions_4_1_Core>
 
 #include <GL/gl.h>
 
@@ -12,18 +15,15 @@ class Shader
 
 public:
 
-    static Shader* buildVertexShader(std::string shaderPath);
-    static Shader* buildFragmentShader(std::string shaderPath);
+    Shader(std::string vertexShaderPath, std::string fragmentShaderPath);
 
-    const char *shaderSource() const;
-    GLenum shaderType() const;
+    const std::string &vertexPath() const;
+    const std::string &fragmentPath() const;
 
 private:
 
-    std::string _shaderSource;
-    GLenum _shaderType;
-
-    Shader(std::string shaderPath, GLenum shaderType);
+    std::string _vertexPath;
+    std::string _fragmentPath;
 
 };
 

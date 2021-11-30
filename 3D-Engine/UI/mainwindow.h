@@ -24,9 +24,7 @@ public:
 private slots:
     void on_loadFileButton_clicked();
 
-    void on_loadVertexShader_clicked();
-
-    void on_loadFragmentShader_clicked();
+    void on_loadSkyBoxButton_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -139,10 +139,10 @@ void OpenGLRenderer::loadSceneFromFile(std::string fileName)
     doneCurrent();
 }
 
-void OpenGLRenderer::loadShader(GLuint type, std::string path)
+void OpenGLRenderer::loadSkybox(std::string path)
 {
     makeCurrent();
-    _scene->loadShader(type, path);
+    _scene->loadSkybox(path);
     doneCurrent();
 }
 

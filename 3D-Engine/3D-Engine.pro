@@ -331,4 +331,6 @@ INCLUDEPATH += $$PWD/libs/OpenMesh/include
 DEPENDPATH += $$PWD/libs/OpenMesh/include
 
 DISTFILES += \
-    3D/Shaders/Shaders/UniformColorShader.frag
+    3D/Shaders/Shaders/UniformColorShader.frag \
+    Resources/Shaders/SkyboxFragmentShader.frag \
+    Resources/Shaders/SkyboxVertexShader.vert
