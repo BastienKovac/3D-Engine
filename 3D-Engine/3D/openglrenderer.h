@@ -26,7 +26,11 @@ public:
     void loadSceneFromFile(std::string fileName);
     void loadSkybox(std::string path);
 
+    void simplifyScene(long triangleTarget);
+
     long getNumberOfTriangles();
+
+    void enableShadows(bool yes);
 
 protected:
     virtual void initializeGL() override;
@@ -40,6 +44,9 @@ protected:
 public slots:
     virtual void updateGL();
     void cleanup();
+
+signals:
+    void geometryChanged();
 
 private:
     // What's being drawn

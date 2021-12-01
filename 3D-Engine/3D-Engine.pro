@@ -16,7 +16,7 @@ QMAKE_CXXFLAGS += -std=c++17
 CONFIG += c++17
 
 # Allows for IO operations against static build for OpenMesh
-DEFINES += OM_STATIC_BUILD
+DEFINES += OM_STATIC_BUILD GLM_ENABLE_EXPERIMENTAL
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -330,5 +330,11 @@ DEPENDPATH += $$PWD/libs/OpenMesh/include
 
 DISTFILES += \
     3D/Shaders/Shaders/UniformColorShader.frag \
+    Resources/Shaders/BaseShadowShader.frag \
+    Resources/Shaders/BaseShadowShader.vert \
+    Resources/Shaders/DepthShadow.frag \
+    Resources/Shaders/DepthShadow.vert \
+    Resources/Shaders/DepthShadowDebug.frag \
+    Resources/Shaders/DepthShadowDebug.vert \
     Resources/Shaders/SkyboxFragmentShader.frag \
     Resources/Shaders/SkyboxVertexShader.vert

@@ -41,12 +41,19 @@ public:
     void refreshScene();
 
     void subdivideScene();
+    void simplifyScene(long triangleTarget);
 
     void loadSceneFromFile(std::string fileName);
     void loadSkybox(std::string path);
 
+    void enableShadows(bool yes);
     
 private:
+
+    std::string BASE_SHADER = "Base";
+    std::string SKYBOX_SHADER = "Skybox";
+    std::string BASE_SHADOW_SHADER = "BaseShadow";
+    std::string DEPTH_SHADOW_SHADER = "DepthShadow";
 
     void renderSkyBox();
     void renderGeometry();
@@ -54,7 +61,12 @@ private:
     void initGeometryBuffers();
 
     int _width, _height;
-    bool _drawFill;
+    bool _drawFill = true;
+
+    // Shadow Map
+    bool _shadows = false;
+    unsigned int _depthMapFBO;
+    unsigned int _depthMap;
 
     // A simple list of object geometries
     std::unique_ptr<Geometry> _geometry;
@@ -145,6 +157,9 @@ private:
     void clearOpenGLContext();
 
     unsigned int loadTexture(const char* path);
+    void renderDepthBuffer();
+    void renderScene();
+    void OpenGLDebug();
 };
 
 #endif // OPENGLGEOMETRY_H

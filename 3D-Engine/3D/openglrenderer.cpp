@@ -66,6 +66,8 @@ void OpenGLRenderer::keyPressEvent(QKeyEvent *keyEvent)
         _scene->subdivideScene();
         update();
         doneCurrent();
+
+        emit geometryChanged();
         break;
     default :
         // Other keys are transmitted to the scene, opening an OpenGL context
@@ -128,9 +130,23 @@ void OpenGLRenderer::loadSkybox(std::string path)
     doneCurrent();
 }
 
+void OpenGLRenderer::simplifyScene(long triangleTarget)
+{
+    makeCurrent();
+    _scene->simplifyScene(triangleTarget);
+    doneCurrent();
+}
+
 long OpenGLRenderer::getNumberOfTriangles()
 {
+    return _scene->getNumberOfTriangles();
+}
 
+void OpenGLRenderer::enableShadows(bool yes)
+{
+    makeCurrent();
+    _scene->enableShadows(yes);
+    doneCurrent();
 }
 
 

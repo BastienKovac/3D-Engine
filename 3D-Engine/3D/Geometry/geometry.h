@@ -5,12 +5,14 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <algorithm>
 
 #include <QObject>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/norm.hpp>
 
 #include <GL/gl.h>
 
@@ -19,6 +21,9 @@ typedef OpenMesh::TriMesh_ArrayKernelT<> Mesh;
 #include <OpenMesh/Core/Utils/PropertyManager.hh>
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Tools/Utils/MeshCheckerT.hh>
+
+#include <OpenMesh/Tools/Decimater/DecimaterT.hh>
+#include <OpenMesh/Tools/Decimater/ModQuadricT.hh>
 
 class Geometry : public QObject
 {
@@ -35,11 +40,14 @@ public:
     virtual std::vector<GLfloat> texCoords();
 
     void subdivide();
+    void simplify(long triangleTarget);
 
     unsigned int textureId() const;
     void setTextureId(unsigned int textureId);
 
     bool hasTexture();
+
+    long getNumberOfTriangles();
 
 
 private:
@@ -65,8 +73,53 @@ private:
 
     void refreshGeometryCache();
 
+    // Subdivision
+
     OpenMesh::VPropHandleT<Mesh::Point> _vp_pos;
     OpenMesh::EPropHandleT<Mesh::Point> _ep_pos;
+
+    // Simplification
+    struct Quadric
+    {
+        GLfloat q00 = 0.0;
+        GLfloat q01 = 0.0;
+        GLfloat q02 = 0.0;
+        GLfloat q03 = 0.0;
+
+        GLfloat q11 = 0.0;
+        GLfloat q12 = 0.0;
+        GLfloat q13 = 0.0;
+
+        GLfloat q22 = 0.0;
+        GLfloat q23 = 0.0;
+
+        GLfloat q33 = 0.0;
+    };
+
+    float norm2(glm::mat3 matrix)
+    {
+        float res = 0.0;
+        for (int i = 0 ; i < 2 ; ++i)
+        {
+            for (int j = 0 ; j < 2 ; ++j)
+            {
+                res += matrix[i][j] * matrix[i][j];
+            }
+        }
+
+        return sqrt(res);
+    };
+
+    OpenMesh::FPropHandleT<glm::vec4> _planeEquations;
+    OpenMesh::VPropHandleT<Geometry::Quadric*> _vertexErrorProp;
+    OpenMesh::EPropHandleT<GLfloat> _edgeEstimatedErrorProp;
+
+    std::vector<Mesh::EdgeHandle> _sortedEdges;
+
+    void initializeSimplification();
+    void computeVertexErrors();
+    void computeErrorForVertex(Mesh::VertexHandle vertex);
+    void computeEdge(OpenMesh::SmartEdgeHandle edge);
 };
 
 #endif // GEOMETRY_H

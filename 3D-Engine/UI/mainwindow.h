@@ -23,10 +23,12 @@ public:
 
 private slots:
     void on_loadFileButton_clicked();
-
     void on_loadSkyBoxButton_clicked();
-
     void on_simplifyButton_clicked();
+
+    void updateNumberOfTriangles();
+
+    void on_shadowmapBox_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -13,6 +13,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->renderer->resize(ui->renderer->sizeHint());
     ui->renderer->setFocus();
+
+    ui->triangleTargetSpin->setMinimum(0);
+    ui->triangleTargetSpin->setMaximum(0);
+
+    QObject::connect(ui->renderer, &OpenGLRenderer::geometryChanged, this, &MainWindow::updateNumberOfTriangles);
 }
 
 MainWindow::~MainWindow()
@@ -27,6 +32,7 @@ void MainWindow::on_loadFileButton_clicked()
     if (filePath != nullptr)
     {
         ui->renderer->loadSceneFromFile(filePath.toStdString());
+        updateNumberOfTriangles();
     }
 }
 
@@ -42,6 +48,20 @@ void MainWindow::on_loadSkyBoxButton_clicked()
 
 void MainWindow::on_simplifyButton_clicked()
 {
+    ui->renderer->simplifyScene(ui->triangleTargetSpin->value());
+    updateNumberOfTriangles();
+}
 
+void MainWindow::updateNumberOfTriangles()
+{
+    long nbTriangles = ui->renderer->getNumberOfTriangles();
+    ui->triangleTargetSpin->setMaximum(nbTriangles);
+    ui->triangleTargetSpin->setValue(nbTriangles);
+}
+
+
+void MainWindow::on_shadowmapBox_clicked()
+{
+    ui->renderer->enableShadows(ui->shadowmapBox->isChecked());
 }
 

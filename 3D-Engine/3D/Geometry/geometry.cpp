@@ -44,8 +44,6 @@ void Geometry::refreshGeometryCache()
         _mesh.request_face_normals();
         // let the mesh update the normals
         _mesh.update_normals();
-        // dispose the face normals, as we don't need them anymore
-        _mesh.release_face_normals();
     }
 
     for (const auto& vh : _mesh.vertices())
@@ -88,6 +86,26 @@ void Geometry::refreshGeometryCache()
     _mesh.garbage_collection();
 
     _dirty = false;
+}
+
+void Geometry::initializeSimplification()
+{
+    _sortedEdges.clear();
+
+    // Init vertex errors
+    computeVertexErrors();
+
+    // Init edge errors and replacements
+    for (auto edge : _mesh.edges())
+    {
+        computeEdge(edge);
+        _sortedEdges.push_back(edge);
+    }
+
+    // Sort by ascending error
+    std::sort(_sortedEdges.begin(), _sortedEdges.end(), [this](Mesh::EdgeHandle a, Mesh::EdgeHandle b) {
+        return _mesh.property(_edgeEstimatedErrorProp, a) > _mesh.property(_edgeEstimatedErrorProp, b);
+    });
 }
 
 std::vector<GLfloat> Geometry::vertices()
@@ -170,6 +188,211 @@ void Geometry::subdivide()
     _dirty = true;
 }
 
+void Geometry::computeErrorForVertex(Mesh::VertexHandle vertex)
+{
+    Quadric* quadric = new Quadric();
+
+    for (Mesh::VertexFaceIter vf_it = _mesh.vf_begin(vertex) ; vf_it.is_valid() ; ++vf_it)
+    {
+        glm::vec4 plane = _mesh.property(_planeEquations, *vf_it);
+
+        quadric->q00 += plane[0] * plane[0];
+        quadric->q01 += plane[0] * plane[1];
+        quadric->q02 += plane[0] * plane[2];
+        quadric->q03 += plane[0] * plane[3];
+
+        quadric->q11 += plane[1] * plane[1];
+        quadric->q12 += plane[1] * plane[2];
+        quadric->q13 += plane[1] * plane[3];
+
+        quadric->q22 += plane[2] * plane[2];
+        quadric->q23 += plane[2] * plane[3];
+
+        quadric->q33 += plane[3] * plane[3];
+    }
+
+    _mesh.property(_vertexErrorProp, vertex) = quadric;
+}
+
+void Geometry::computeVertexErrors()
+{
+    for (Mesh::FaceIter f_it = _mesh.faces_begin() ; f_it != _mesh.faces_end() ; ++f_it)
+    {
+        auto vertices = f_it->vertices();
+        auto vectorVertices = vertices.to_vector();
+
+        Mesh::Point a = _mesh.point(vectorVertices[0]);
+        Mesh::Point b = _mesh.point(vectorVertices[1]);
+        Mesh::Point c = _mesh.point(vectorVertices[2]);
+
+        glm::vec3 AB = {b[0] - a[0], b[1] - a[1], b[2] - a[2]};
+        glm::vec3 AC = {c[0] - a[0], c[1] - a[1], c[2] - a[2]};
+
+        auto cross = glm::cross(AB, AC);
+        auto norm = cross / glm::l1Norm(cross);
+
+        float d = - a[0] * norm[0] - a[1] * norm[1] - a[2] * norm[2];
+
+        glm::vec4 equation = {norm[0], norm[1], norm[2], d};
+
+        _mesh.property(_planeEquations, *f_it) = equation;
+    }
+
+    for (auto vertex : _mesh.vertices())
+    {
+        computeErrorForVertex(vertex);
+    }
+}
+
+void Geometry::computeEdge(OpenMesh::SmartEdgeHandle edge)
+{
+    Quadric* q1 = _mesh.property(_vertexErrorProp, edge.v0());
+    Quadric* q2 = _mesh.property(_vertexErrorProp, edge.v1());
+
+    glm::mat4 mat1 = {
+        q1->q00, q1->q01, q1->q02, q1->q03,
+        q1->q01, q1->q11, q1->q12, q1->q13,
+        q1->q02, q1->q12, q1->q22, q1->q23,
+        q1->q03, q1->q13, q1->q23, q1->q33
+    };
+
+    glm::mat4 mat2 = {
+        q2->q00, q2->q01, q2->q02, q2->q03,
+        q2->q01, q2->q11, q2->q12, q2->q13,
+        q2->q02, q2->q12, q2->q22, q2->q23,
+        q2->q03, q2->q13, q2->q23, q2->q33
+    };
+
+    glm::mat4 matPrime = mat1 + mat2;
+
+    glm::mat3 A = {
+        matPrime[0][0], matPrime[0][1], matPrime[0][2],
+        matPrime[0][1], matPrime[1][1], matPrime[1][2],
+        matPrime[0][2], matPrime[1][2], matPrime[2][2]
+    };
+
+    glm::mat3 xMat = {
+        -matPrime[0][3], matPrime[0][1], matPrime[0][2],
+        -matPrime[1][3], matPrime[1][1], matPrime[1][2],
+        -matPrime[2][3], matPrime[1][2], matPrime[2][2]
+    };
+
+    glm::mat3 yMat = {
+        matPrime[0][0], -matPrime[0][3], matPrime[0][2],
+        matPrime[0][1], -matPrime[1][3], matPrime[1][2],
+        matPrime[0][2], -matPrime[2][3], matPrime[2][2]
+    };
+
+    glm::mat3 zMat = {
+        matPrime[0][0], matPrime[0][1], -matPrime[0][3],
+        matPrime[0][1], matPrime[1][1], -matPrime[1][3],
+        matPrime[0][2], matPrime[1][2], -matPrime[2][3]
+    };
+
+    float x = norm2(xMat) / norm2(A);
+    float y = norm2(yMat) / norm2(A);
+    float z = norm2(zMat) / norm2(A);
+
+    glm::vec4 v = {x, y, z, 1};
+
+    float error = glm::dot(v, matPrime * v);
+
+    _mesh.property(_edgeEstimatedErrorProp, edge) = error;
+}
+
+void Geometry::simplify(long triangleTarget)
+{
+    if (_mesh.n_faces() <= (size_t) triangleTarget)
+    {
+        // No work
+        return;
+    }
+
+    // Code using OpenMesh built-in decimation (Custom code below doesn't work)
+
+    typedef OpenMesh::Decimater::DecimaterT<Mesh> Decimater;
+    typedef OpenMesh::Decimater::ModQuadricT<Mesh>::Handle HModQuadric;
+
+    Decimater decimater(_mesh);
+    HModQuadric hModQuadric;
+
+    decimater.add(hModQuadric);
+
+    decimater.module(hModQuadric).unset_max_err();
+    decimater.initialize();
+    decimater.decimate_to_faces(0, triangleTarget);
+
+    _mesh.garbage_collection();
+
+    /*
+
+    _mesh.add_property(_planeEquations);
+    _mesh.add_property(_vertexErrorProp);
+    _mesh.add_property(_edgeEstimatedErrorProp);
+
+    _mesh.request_face_status();
+    _mesh.request_edge_status();
+    _mesh.request_vertex_status();
+
+    initializeSimplification();
+
+    // Apply edge collapse while needed
+    long i = 0;
+
+    while (_mesh.n_faces() > (size_t) triangleTarget)
+    {
+        if (++i % 100 == 0)
+        {
+            std::cout << "Iteration " << i << ", current number of triangles: " << _mesh.n_faces() << " / " << triangleTarget << std::endl;
+        }
+
+        Mesh::EdgeHandle candidate = _sortedEdges[0];
+        Mesh::HalfedgeHandle he1 = _mesh.halfedge_handle(candidate, 0);
+
+        // Recompute affected vertices and faces
+        Mesh::VertexHandle to = _mesh.to_vertex_handle(he1);
+
+        computeErrorForVertex(to);
+        for (Mesh::VertexFaceIter vf_it = _mesh.vf_iter(to) ; vf_it.is_valid() ; ++vf_it)
+        {
+            for (Mesh::FaceEdgeIter fe_it = _mesh.fe_iter(*vf_it) ; fe_it.is_valid() ; ++fe_it)
+            {
+                computeEdge(*fe_it);
+            }
+        }
+
+        // Do collapse
+        _mesh.collapse(he1);
+
+        // Recompute errors for new edges
+        for (Mesh::VertexEdgeIter ve_it = _mesh.ve_iter(to) ; ve_it.is_valid() ; ++ve_it)
+        {
+            computeEdge(*ve_it);
+        }
+
+        // Repopulate sorted list
+        _sortedEdges.clear();
+        for (auto edge : _mesh.edges())
+        {
+            _sortedEdges.push_back(edge);
+        }
+
+        // Sort by ascending error
+        std::sort(_sortedEdges.begin(), _sortedEdges.end(), [this](Mesh::EdgeHandle a, Mesh::EdgeHandle b) {
+            return _mesh.property(_edgeEstimatedErrorProp, a) > _mesh.property(_edgeEstimatedErrorProp, b);
+        });
+
+        // Clean-up
+        _mesh.garbage_collection();
+    }
+
+    _mesh.remove_property(_planeEquations);
+    _mesh.remove_property(_vertexErrorProp);
+    _mesh.remove_property(_edgeEstimatedErrorProp);*/
+
+    _dirty = true;
+}
+
 unsigned int Geometry::textureId() const
 {
     return _textureId;
@@ -183,6 +406,11 @@ void Geometry::setTextureId(unsigned int textureId)
 bool Geometry::hasTexture()
 {
     return _mesh.has_vertex_texcoords2D();
+}
+
+long Geometry::getNumberOfTriangles()
+{
+    return _mesh.n_faces();
 }
 
 void Geometry::updateExistingVertex(const Mesh::VertexHandle &v_h)
