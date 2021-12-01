@@ -1,4 +1,4 @@
-QT       += core gui opengl charts
+QT       += core gui opengl
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 LIBS += -L/usr/local/lib -lstdc++fs
