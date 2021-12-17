@@ -43,11 +43,17 @@ void SimpleScene::initWeights()
     std::vector<GLfloat> vertices = _geometry->vertices();
     std::vector<GLfloat> weights;
 
+    if (vertices.size() == 0)
+    {
+        return;
+    }
+
     for (unsigned int i = 0 ; i < vertices.size() ; i += 3)
     {
         glm::vec3 vertex(vertices[i], vertices[i + 1], vertices[i + 2]);
-        auto weightRoot = (vertex.y + 1.5f) / 3.f;
-        auto weightChild = 1 - weightRoot;
+
+        float weightRoot = (vertex.y + 1.5f) / 3.0f;
+        float weightChild = 1 - weightRoot;
 
         weights.push_back(weightRoot);
         weights.push_back(weightChild);
