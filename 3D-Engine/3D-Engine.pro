@@ -23,6 +23,7 @@ DEFINES += OM_STATIC_BUILD GLM_ENABLE_EXPERIMENTAL
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    3D/Animation/bone.cpp \
     3D/Camera/camera.cpp \
     glm/detail/glm.cpp \
     main.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
     3D/Shaders/shader.cpp
 
 HEADERS += \
+    3D/Animation/bone.h \
     3D/Camera/camera.h \
     UI/mainwindow.h \
     3D/openglrenderer.h \
@@ -330,6 +332,8 @@ DEPENDPATH += $$PWD/libs/OpenMesh/include
 
 DISTFILES += \
     3D/Shaders/Shaders/UniformColorShader.frag \
+    Resources/Shaders/Animation.frag \
+    Resources/Shaders/Animation.vert \
     Resources/Shaders/BaseShadowShader.frag \
     Resources/Shaders/BaseShadowShader.vert \
     Resources/Shaders/DepthShadow.frag \

@@ -25,11 +25,56 @@ SimpleScene::SimpleScene(int width, int height)
 
     loadShader(BASE_SHADER, "../3D-Engine/Resources/Shaders/BaseVertexShader.vert", "../3D-Engine/Resources/Shaders/BaseFragmentShader.frag");
     loadShader(SKYBOX_SHADER, "../3D-Engine/Resources/Shaders/SkyboxVertexShader.vert", "../3D-Engine/Resources/Shaders/SkyboxFragmentShader.frag");
-
     loadShader(BASE_SHADOW_SHADER, "../3D-Engine/Resources/Shaders/BaseShadowShader.vert", "../3D-Engine/Resources/Shaders/BaseShadowShader.frag");
     loadShader(DEPTH_SHADOW_SHADER, "../3D-Engine/Resources/Shaders/DepthShadow.vert", "../3D-Engine/Resources/Shaders/DepthShadow.frag");
+    loadShader(ANIMATION_SHADER, "../3D-Engine/Resources/Shaders/Animation.vert", "../3D-Engine/Resources/Shaders/Animation.frag");
 
     refreshScene();
+}
+
+void SimpleScene::initBones()
+{
+    _rootBone = std::make_unique<Bone>(0);
+    _rootBone->addChildBone(1);
+}
+
+void SimpleScene::initWeights()
+{
+    std::vector<GLfloat> vertices = _geometry->vertices();
+    std::vector<GLfloat> weights;
+
+    for (unsigned int i = 0 ; i < vertices.size() ; i += 3)
+    {
+        glm::vec3 vertex(vertices[i], vertices[i + 1], vertices[i + 2]);
+        auto weightRoot = (vertex.y + 1.5f) / 3.f;
+        auto weightChild = 1 - weightRoot;
+
+        weights.push_back(weightRoot);
+        weights.push_back(weightChild);
+    }
+
+    _geometry->setWeights(weights);
+}
+
+void SimpleScene::updateMeshVertices()
+{
+    auto& initialPose = _geometry->initialPose();
+    auto& bonesWeights = _geometry->weights();
+    auto vertices = _geometry->vertices();
+    auto rootBoneTransform = _rootBone->getTransformMatrix();
+    auto childBoneTransform = _rootBone->firstChild()->getTransformMatrix();
+
+    for(unsigned int i = 0; i < initialPose.size(); i += 3) {
+        glm::vec4 initialVertex({ initialPose[i], initialPose[i+1], initialPose[i+2], 1.0 });
+        auto vertexWeights = &bonesWeights[(i  / 3) * 2];
+
+        auto weightedTransform = rootBoneTransform * vertexWeights[0] + childBoneTransform * vertexWeights[1];
+
+        auto newVertex = weightedTransform * initialVertex;
+        vertices[i] = newVertex.x; vertices[i + 1] = newVertex.y; vertices[i + 2] = newVertex.z;
+    }
+
+    _geometry->setVertices(vertices);
 }
 
 void SimpleScene::toggleDrawmode()
@@ -224,6 +269,21 @@ void SimpleScene::OpenGLDebug()
     }
 }
 
+double SimpleScene::elapsedTime()
+{
+    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _start);
+    return time.count() / 1000.f;
+}
+
+void SimpleScene::setAnimate(bool newAnimate)
+{
+    if (newAnimate != _animate)
+    {
+        _animate = newAnimate;
+        _start = std::chrono::steady_clock::now();
+    }
+}
+
 void SimpleScene::draw() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -244,7 +304,32 @@ void SimpleScene::draw() {
         renderSkyBox();
     }
 
-    renderGeometry();
+    if (_animate)
+    {
+        auto t = elapsedTime();
+
+        _rootBone->firstChild()->setRotationZ(std::cos(t * 2) * 90.0f);
+        _rootBone->setTranslationX(std::cos(t) * 2);
+        _rootBone->firstChild()->setTranslationX(std::cos(t) * 2);
+
+        _rootBone->firstChild()->setScale(glm::vec3(1., 1., 1.) * float(std::cos(t) * 0.5f + 1));
+
+        useShader(ANIMATION_SHADER);
+        glUniformMatrix4fv(glGetUniformLocation(_programID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
+        glUniformMatrix4fv(glGetUniformLocation(_programID, "view"), 1, GL_FALSE, glm::value_ptr(_view));
+        glUniformMatrix4fv(glGetUniformLocation(_programID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
+
+        glUniformMatrix4fv(glGetUniformLocation(_programID, "rootTransform"), 1, GL_FALSE, glm::value_ptr(_rootBone->getTransformMatrix()));
+        glUniformMatrix4fv(glGetUniformLocation(_programID, "childTransform"), 1, GL_FALSE, glm::value_ptr(_rootBone->firstChild()->getTransformMatrix()));
+
+        updateMeshVertices();
+        renderScene();
+    }
+    else
+    {
+        renderGeometry();
+    }
+
     OpenGLDebug();
 }
 
@@ -317,6 +402,8 @@ void SimpleScene::refreshScene()
     {
         initSkyBoxBuffers();
     }
+
+    initWeights();
 }
 
 void SimpleScene::subdivideScene()

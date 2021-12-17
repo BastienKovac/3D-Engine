@@ -49,6 +49,10 @@ public:
 
     long getNumberOfTriangles();
 
+    void setVertices(const std::vector<GLfloat>& vertices);
+    void setWeights(const std::vector<GLfloat>& weights);
+    inline const std::vector<GLfloat>& weights() const { return _bonesWeights; }
+    inline const std::vector<GLfloat>& initialPose() const { return _initialPose; }
 
 private:
     // OpenMesh geometry
@@ -64,6 +68,8 @@ private:
     std::vector<GLfloat> _normals;
     std::vector<GLuint> _indices;
     std::vector<GLfloat> _texCoords;
+    std::vector<GLfloat> _initialPose;
+    std::vector<GLfloat> _bonesWeights;
 
     void updateExistingVertex(const Mesh::VertexHandle& v_h);
     void addMidPoint(const Mesh::EdgeHandle& e_h);

@@ -85,6 +85,8 @@ void Geometry::refreshGeometryCache()
     _mesh.release_vertex_normals();
     _mesh.garbage_collection();
 
+    _initialPose = vertices();
+
     _dirty = false;
 }
 
@@ -106,6 +108,16 @@ void Geometry::initializeSimplification()
     std::sort(_sortedEdges.begin(), _sortedEdges.end(), [this](Mesh::EdgeHandle a, Mesh::EdgeHandle b) {
         return _mesh.property(_edgeEstimatedErrorProp, a) > _mesh.property(_edgeEstimatedErrorProp, b);
     });
+}
+
+void Geometry::setWeights(const std::vector<GLfloat> &weights)
+{
+    _bonesWeights = weights;
+}
+
+void Geometry::setVertices(const std::vector<GLfloat> &vertices)
+{
+    _vertices = vertices;
 }
 
 std::vector<GLfloat> Geometry::vertices()

@@ -1,10 +1,11 @@
-#ifndef OPENGLGEOMETRY_H
+﻿#ifndef OPENGLGEOMETRY_H
 #define OPENGLGEOMETRY_H
 
 #include <3D/Camera/camera.h>
 #include <3D/Geometry/geometry.h>
 #include <3D/Shaders/shader.h>
 #include <3D/stb_image.h>
+#include <3D/Animation/bone.h>
 
 #include <QOpenGLFunctions_4_1_Core>
 
@@ -19,6 +20,8 @@
 #include <iostream>
 #include <filesystem>
 #include <algorithm>
+#include <chrono>
+#include <math.h>
 
 class SimpleScene : public QOpenGLFunctions_4_1_Core
 {
@@ -48,12 +51,15 @@ public:
 
     void enableShadows(bool yes);
     
+    void setAnimate(bool newAnimate);
+
 private:
 
     std::string BASE_SHADER = "Base";
     std::string SKYBOX_SHADER = "Skybox";
     std::string BASE_SHADOW_SHADER = "BaseShadow";
     std::string DEPTH_SHADOW_SHADER = "DepthShadow";
+    std::string ANIMATION_SHADER = "Animation";
 
     void renderSkyBox();
     void renderGeometry();
@@ -160,6 +166,19 @@ private:
     void renderDepthBuffer();
     void renderScene();
     void OpenGLDebug();
+
+    // Animation
+    std::chrono::steady_clock::time_point _start;
+    double elapsedTime();
+
+    bool _animate = false;
+    void initBones();
+    void initWeights();
+    void updateMeshVertices();
+
+    std::unique_ptr<Bone> _rootBone;
+
+
 };
 
 #endif // OPENGLGEOMETRY_H
