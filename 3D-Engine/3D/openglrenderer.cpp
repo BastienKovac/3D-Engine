@@ -149,6 +149,12 @@ void OpenGLRenderer::enableShadows(bool yes)
     doneCurrent();
 }
 
+void OpenGLRenderer::enableAnimation(bool yes)
+{
+    makeCurrent();
+    _scene->setAnimate(yes);
+    doneCurrent();
+}
 
 void OpenGLRenderer::updateGL()
 {

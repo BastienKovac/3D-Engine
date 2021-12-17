@@ -168,6 +168,7 @@ private:
     void OpenGLDebug();
 
     // Animation
+    GLuint _wbo;
     std::chrono::steady_clock::time_point _start;
     double elapsedTime();
 
@@ -179,6 +180,8 @@ private:
     std::unique_ptr<Bone> _rootBone;
 
 
+    void refreshGeometry();
+    void prepareShadows();
 };
 
 #endif // OPENGLGEOMETRY_H

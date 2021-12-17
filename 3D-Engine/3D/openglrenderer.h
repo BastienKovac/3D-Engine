@@ -31,6 +31,7 @@ public:
     long getNumberOfTriangles();
 
     void enableShadows(bool yes);
+    void enableAnimation(bool yes);
 
 protected:
     virtual void initializeGL() override;

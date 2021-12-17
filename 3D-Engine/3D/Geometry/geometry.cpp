@@ -85,9 +85,9 @@ void Geometry::refreshGeometryCache()
     _mesh.release_vertex_normals();
     _mesh.garbage_collection();
 
-    _initialPose = vertices();
-
     _dirty = false;
+
+     _initialPose = vertices();
 }
 
 void Geometry::initializeSimplification()

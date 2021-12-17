@@ -65,3 +65,9 @@ void MainWindow::on_shadowmapBox_clicked()
     ui->renderer->enableShadows(ui->shadowmapBox->isChecked());
 }
 
+
+void MainWindow::on_animationCheckBox_clicked()
+{
+    ui->renderer->enableAnimation(ui->animationCheckBox->isChecked());
+}
+

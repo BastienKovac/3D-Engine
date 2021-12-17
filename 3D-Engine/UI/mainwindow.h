@@ -30,6 +30,8 @@ private slots:
 
     void on_shadowmapBox_clicked();
 
+    void on_animationCheckBox_clicked();
+
 private:
     Ui::MainWindow *ui;
 

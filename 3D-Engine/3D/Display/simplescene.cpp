@@ -145,31 +145,42 @@ void SimpleScene::renderSkyBox()
     glDepthMask(GL_TRUE);
 }
 
-void SimpleScene::initGeometryBuffers()
+void SimpleScene::refreshGeometry()
 {
-    glGenBuffers(1, &_vbo);
-    glGenBuffers(1, &_nbo);
-    glGenBuffers(1, &_ebo);
-    glGenVertexArrays(1, &_vao);
-
     glBindVertexArray(_vao);
-
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBufferData(GL_ARRAY_BUFFER, _geometry.get()->vertices().size() * sizeof (GLfloat), _geometry.get()->vertices().data(), GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, _nbo);
     glBufferData(GL_ARRAY_BUFFER, _geometry.get()->normals().size() * sizeof (GLfloat), _geometry.get()->normals().data(), GL_STATIC_DRAW);
-
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(1);
+
+    if (_animate)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, _wbo);
+        glBufferData(GL_ARRAY_BUFFER, _geometry->weights().size() * sizeof(GLfloat), _geometry->weights().data(), GL_STATIC_READ);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, (GLvoid*)0);
+        glEnableVertexAttribArray(2);
+    }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, _geometry.get()->indices().size() * sizeof (GLfloat), _geometry.get()->indices().data(), GL_STATIC_DRAW);
 
     glBindVertexArray(0);
+}
+
+void SimpleScene::initGeometryBuffers()
+{
+    glGenBuffers(1, &_vbo);
+    glGenBuffers(1, &_nbo);
+    glGenBuffers(1, &_ebo);
+    glGenBuffers(1, &_wbo);
+    glGenVertexArrays(1, &_vao);
+
+    refreshGeometry();
 }
 
 void SimpleScene::renderScene()
@@ -179,52 +190,57 @@ void SimpleScene::renderScene()
     glBindVertexArray(0);
 }
 
+void SimpleScene::prepareShadows()
+{
+    glm::mat4 lightProjection, lightView;
+    glm::mat4 lightSpaceMatrix;
+
+    glm::vec3 lightPosition(-2.0f, 8.0f, -1.0f);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    float nearPlane = 1.0f, farPlane = 7.5f;
+    lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+    lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+    lightSpaceMatrix = lightProjection * lightView;
+
+    useShader(DEPTH_SHADOW_SHADER);
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+
+    glViewport(0, 0, 1024, 1024);
+    glBindFramebuffer(GL_FRAMEBUFFER, _depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    renderScene();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, QOpenGLContext::currentContext()->defaultFramebufferObject());
+
+    glViewport(0, 0, _width, _height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    useShader(BASE_SHADOW_SHADER);
+    // Vertex
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "view"), 1, GL_FALSE, glm::value_ptr(_view));
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
+    glUniformMatrix4fv(glGetUniformLocation(_programID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+
+    // Fragment
+    glUniform3f(glGetUniformLocation(_programID, "lightPos"), lightPosition[0], lightPosition[1], lightPosition[2]);
+    glUniform3f(glGetUniformLocation(_programID, "viewPos"), _camera->position()[0], _camera->position()[1], _camera->position()[2]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, _depthMap);
+
+    renderScene();
+}
+
 void SimpleScene::renderGeometry()
 {
     if (_shadows && _drawFill)
     {
         // Compute scene depth in a texture
-        glm::mat4 lightProjection, lightView;
-        glm::mat4 lightSpaceMatrix;
-
-        glm::vec3 lightPosition(-2.0f, 8.0f, -1.0f);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        float nearPlane = 1.0f, farPlane = 7.5f;
-        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
-        lightView = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-        lightSpaceMatrix = lightProjection * lightView;
-
-        useShader(DEPTH_SHADOW_SHADER);
-        glUniformMatrix4fv(glGetUniformLocation(_programID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
-
-        glViewport(0, 0, 1024, 1024);
-        glBindFramebuffer(GL_FRAMEBUFFER, _depthMapFBO);
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        renderScene();
-
-        glBindFramebuffer(GL_FRAMEBUFFER, QOpenGLContext::currentContext()->defaultFramebufferObject());
-
-        glViewport(0, 0, _width, _height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        useShader(BASE_SHADOW_SHADER);
-        // Vertex
-        glUniformMatrix4fv(glGetUniformLocation(_programID, "model"), 1, GL_FALSE, glm::value_ptr(_model));
-        glUniformMatrix4fv(glGetUniformLocation(_programID, "view"), 1, GL_FALSE, glm::value_ptr(_view));
-        glUniformMatrix4fv(glGetUniformLocation(_programID, "projection"), 1, GL_FALSE, glm::value_ptr(_projection));
-        glUniformMatrix4fv(glGetUniformLocation(_programID, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
-
-        // Fragment
-        glUniform3f(glGetUniformLocation(_programID, "lightPos"), lightPosition[0], lightPosition[1], lightPosition[2]);
-        glUniform3f(glGetUniformLocation(_programID, "viewPos"), _camera->position()[0], _camera->position()[1], _camera->position()[2]);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _depthMap);
-
-        renderScene();
+        prepareShadows();
     }
     else
     {
@@ -281,6 +297,7 @@ void SimpleScene::setAnimate(bool newAnimate)
     {
         _animate = newAnimate;
         _start = std::chrono::steady_clock::now();
+        refreshScene();
     }
 }
 
@@ -306,10 +323,19 @@ void SimpleScene::draw() {
 
     if (_animate)
     {
+        // Needs to reinitialize geometry
+        refreshGeometry();
+
+        if (_shadows && _drawFill)
+        {
+            prepareShadows();
+        }
+
         auto t = elapsedTime();
 
         _rootBone->firstChild()->setRotationZ(std::cos(t * 2) * 90.0f);
         _rootBone->setTranslationX(std::cos(t) * 2);
+        _rootBone->setTranslationY(std::cos(t) * 3);
         _rootBone->firstChild()->setTranslationX(std::cos(t) * 2);
 
         _rootBone->firstChild()->setScale(glm::vec3(1., 1., 1.) * float(std::cos(t) * 0.5f + 1));
@@ -330,7 +356,7 @@ void SimpleScene::draw() {
         renderGeometry();
     }
 
-    OpenGLDebug();
+   OpenGLDebug();
 }
 
 void SimpleScene::mouseclick(int button, float xpos, float ypos) {
@@ -403,6 +429,7 @@ void SimpleScene::refreshScene()
         initSkyBoxBuffers();
     }
 
+    initBones();
     initWeights();
 }
 
@@ -549,10 +576,6 @@ void SimpleScene::loadSkybox(std::string path)
         _skyboxID = textureID;
 
         refreshScene();
-    }
-    else
-    {
-        std::cerr << "Missing skybox files" << std::endl;
     }
 }
 
